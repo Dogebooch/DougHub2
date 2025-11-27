@@ -160,6 +160,15 @@ class QuestionListResponse(BaseModel):
     questions: list[QuestionInfo]
 
 
+class QuestionDetailResponse(BaseModel):
+    """Response model for a single question with full details."""
+
+    question_id: int
+    source_name: str
+    source_question_key: str
+    raw_html: str
+
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
@@ -489,6 +498,37 @@ async def list_questions(db: Session = Depends(get_db)) -> QuestionListResponse:
     ]
 
     return QuestionListResponse(questions=question_infos)
+
+
+@api_app.get("/questions/{question_id}", response_model=QuestionDetailResponse)
+async def get_question(
+    question_id: int, db: Session = Depends(get_db)
+) -> QuestionDetailResponse:
+    """
+    Retrieve the full details of a single question by its ID.
+
+    Args:
+        question_id: The ID of the question to retrieve.
+        db: Database session (injected).
+
+    Returns:
+        QuestionDetailResponse with the question's full details.
+
+    Raises:
+        HTTPException: 404 if the question is not found.
+    """
+    repo = QuestionRepository(db)
+    question = repo.get_question_by_id(question_id)
+
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return QuestionDetailResponse(
+        question_id=int(question.question_id),  # type: ignore[arg-type]
+        source_name=str(question.source.name),  # type: ignore[arg-type]
+        source_question_key=str(question.source_question_key),  # type: ignore[arg-type]
+        raw_html=str(question.raw_html),  # type: ignore[arg-type]
+    )
 
 
 @api_app.post("/extract", response_model=ExtractionResponse)

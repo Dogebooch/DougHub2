@@ -472,3 +472,51 @@ class TestListQuestionsEndpoint:
         data = response.json()
         assert "questions" in data
         assert len(data["questions"]) == 0
+
+
+class TestGetQuestionEndpoint:
+    """Tests for the GET /questions/{question_id} endpoint."""
+
+    def test_get_question_returns_correct_data(self, client):
+        """Test that the endpoint returns the correct question data for a valid ID."""
+        test_client, test_session = client
+
+        # Create a sample source and question
+        source = Source(name="Detail_Test_Source", description="Test source for detail")
+        test_session.add(source)
+        test_session.flush()
+
+        question = Question(
+            source_id=source.source_id,
+            source_question_key="detail-q001",
+            raw_html="<html><body><h1>Test Question</h1><p>This is the question content.</p></body></html>",
+            raw_metadata_json='{"bodyText": "Test question body text"}',
+            status="extracted",
+        )
+        test_session.add(question)
+        test_session.commit()
+
+        # Make request to get the question
+        response = test_client.get(f"/questions/{question.question_id}")
+
+        # Verify response
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["question_id"] == question.question_id
+        assert data["source_name"] == "Detail_Test_Source"
+        assert data["source_question_key"] == "detail-q001"
+        assert "<html>" in data["raw_html"]
+        assert "Test Question" in data["raw_html"]
+
+    def test_get_question_returns_404_for_invalid_id(self, client):
+        """Test that the endpoint returns 404 for a non-existent question ID."""
+        test_client, _ = client
+
+        # Request a question ID that doesn't exist
+        response = test_client.get("/questions/99999")
+
+        assert response.status_code == 404
+        data = response.json()
+        assert "detail" in data
+        assert data["detail"] == "Question not found"
