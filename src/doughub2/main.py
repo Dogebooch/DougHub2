@@ -146,6 +146,20 @@ class ExtractionResponse(BaseModel):
     database: DatabaseInfo
 
 
+class QuestionInfo(BaseModel):
+    """Summary information about a question."""
+
+    question_id: int
+    source_name: str
+    source_question_key: str
+
+
+class QuestionListResponse(BaseModel):
+    """Response model for listing questions."""
+
+    questions: list[QuestionInfo]
+
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
@@ -306,7 +320,19 @@ def persist_to_database(
         source = repo.get_or_create_source(name=source_name)
         source_id: int = source.source_id  # type: ignore
 
-        # Check if question already exists
+        # Check for duplicates based on question content (bodyText)
+        body_text = data.get("bodyText")
+        if body_text:
+            existing_question_by_content = repo.get_question_by_body_text(
+                source_id, body_text
+            )
+            if existing_question_by_content:
+                logger.info(
+                    "Duplicate question content detected. Skipping persistence."
+                )
+                return True, None
+
+        # Check if question already exists by source key (idempotency for same URL)
         existing_question = repo.get_question_by_source_key(source_id, question_key)
         if existing_question:
             logger.info(
@@ -440,6 +466,29 @@ async def root() -> dict:
         A JSON message identifying the API.
     """
     return {"message": "DougHub2 Extraction API"}
+
+
+@api_app.get("/questions", response_model=QuestionListResponse)
+async def list_questions(db: Session = Depends(get_db)) -> QuestionListResponse:
+    """
+    Retrieve a list of all extracted questions.
+
+    Returns:
+        A list of questions with their ID, source name, and source key.
+    """
+    repo = QuestionRepository(db)
+    questions = repo.get_all_questions()
+
+    question_infos = [
+        QuestionInfo(
+            question_id=int(q.question_id),  # type: ignore[arg-type]
+            source_name=str(q.source.name),  # type: ignore[arg-type]
+            source_question_key=str(q.source_question_key),  # type: ignore[arg-type]
+        )
+        for q in questions
+    ]
+
+    return QuestionListResponse(questions=question_infos)
 
 
 @api_app.post("/extract", response_model=ExtractionResponse)

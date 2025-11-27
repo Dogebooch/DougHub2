@@ -400,3 +400,75 @@ class TestDatabasePersistence:
 
             # Verify that no new question was created
             assert test_session.query(Question).count() == 1
+
+
+class TestListQuestionsEndpoint:
+    """Tests for the GET /questions endpoint."""
+
+    def test_list_questions_returns_all_questions(self, client):
+        """Test that the /questions endpoint returns all questions from the database."""
+        test_client, test_session = client
+
+        # Create sample sources
+        source1 = Source(name="Test_Source_1", description="First test source")
+        source2 = Source(name="Test_Source_2", description="Second test source")
+        test_session.add_all([source1, source2])
+        test_session.flush()
+
+        # Create sample questions
+        question1 = Question(
+            source_id=source1.source_id,
+            source_question_key="q001",
+            raw_html="<html>Question 1</html>",
+            raw_metadata_json='{"bodyText": "Question 1 body"}',
+            status="extracted",
+        )
+        question2 = Question(
+            source_id=source1.source_id,
+            source_question_key="q002",
+            raw_html="<html>Question 2</html>",
+            raw_metadata_json='{"bodyText": "Question 2 body"}',
+            status="extracted",
+        )
+        question3 = Question(
+            source_id=source2.source_id,
+            source_question_key="q003",
+            raw_html="<html>Question 3</html>",
+            raw_metadata_json='{"bodyText": "Question 3 body"}',
+            status="extracted",
+        )
+        test_session.add_all([question1, question2, question3])
+        test_session.commit()
+
+        # Make request to /questions endpoint
+        response = test_client.get("/questions")
+
+        # Verify response
+        assert response.status_code == 200
+        data = response.json()
+        assert "questions" in data
+        assert len(data["questions"]) == 3
+
+        # Verify the content of returned questions
+        questions_by_key = {q["source_question_key"]: q for q in data["questions"]}
+
+        assert "q001" in questions_by_key
+        assert questions_by_key["q001"]["source_name"] == "Test_Source_1"
+        assert "question_id" in questions_by_key["q001"]
+
+        assert "q002" in questions_by_key
+        assert questions_by_key["q002"]["source_name"] == "Test_Source_1"
+
+        assert "q003" in questions_by_key
+        assert questions_by_key["q003"]["source_name"] == "Test_Source_2"
+
+    def test_list_questions_returns_empty_when_no_questions(self, client):
+        """Test that the /questions endpoint returns an empty list when no questions exist."""
+        test_client, _ = client
+
+        response = test_client.get("/questions")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "questions" in data
+        assert len(data["questions"]) == 0
