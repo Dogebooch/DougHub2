@@ -236,6 +236,56 @@ After completing any change or request, **always verify the changes**:
 
 This verification step is mandatory. A change is not complete until all tests pass and linting succeeds.
 
+## Git Workflow
+
+After completing a task and verifying all tests pass, **always commit and push changes**:
+
+1. **Stage relevant files**: Only stage files related to the current task (avoid unrelated formatting changes in node_modules, etc.)
+2. **Write a descriptive commit message** using conventional commits format:
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `refactor:` for code refactoring
+   - `test:` for adding or updating tests
+   - `docs:` for documentation changes
+   - `chore:` for maintenance tasks
+3. **Include a detailed body** explaining:
+   - What was changed and why
+   - Key files modified
+   - Any breaking changes or important notes
+4. **Push to remote**: Always push after committing so changes are preserved
+
+### Example Commit Message
+
+```
+feat: Add pydantic-settings and integration test for extraction output
+
+STEP-08 Implementation:
+
+- Add pydantic-settings dependency for configuration management
+- Refactor config.py to use Pydantic Settings class
+- Add integration test for extraction file output
+- Update Python requirement to >=3.10
+
+All tests pass.
+```
+
+### Commands
+
+```bash
+# Stage specific files
+git add <file1> <file2>
+
+# Commit with message
+git commit -m "type: Short description
+
+Detailed explanation of changes..."
+
+# Push to remote
+git push
+```
+
+This ensures all work is tracked, documented, and backed up to the remote repository.
+
 ## Pre-commit Hooks
 
 ```bash
