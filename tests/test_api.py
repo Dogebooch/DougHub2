@@ -14,7 +14,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from doughub2.main import api_app as app, get_db
+from doughub2.main import api_app as app
+from doughub2.main import get_db
 from doughub2.models import Base, Media, Question, Source
 
 
@@ -79,10 +80,10 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.config") as mock_config:
-            mock_config.OUTPUT_DIR = output_dir
-            mock_config.MEDIA_ROOT = str(media_root)
-            mock_config.DATABASE_URL = "sqlite:///:memory:"
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
 
             payload = {
                 "timestamp": "2025-01-01T12:00:00Z",
@@ -130,14 +131,12 @@ class TestExtractEndpoint:
         output_dir, media_root = temp_dirs
 
         with (
-            patch("doughub2.main.config") as mock_config,
-            patch(
-                "doughub2.main.urllib.request.urlretrieve"
-            ) as mock_urlretrieve,
+            patch("doughub2.main.settings") as mock_settings,
+            patch("doughub2.main.urllib.request.urlretrieve") as mock_urlretrieve,
         ):
-            mock_config.OUTPUT_DIR = output_dir
-            mock_config.MEDIA_ROOT = str(media_root)
-            mock_config.DATABASE_URL = "sqlite:///:memory:"
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
 
             # Make urlretrieve create a dummy file
             def create_dummy_file(url, path):
@@ -191,10 +190,10 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.config") as mock_config:
-            mock_config.OUTPUT_DIR = output_dir
-            mock_config.MEDIA_ROOT = str(media_root)
-            mock_config.DATABASE_URL = "sqlite:///:memory:"
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
 
             payload = {
                 "url": "https://minimal.example.com/test/item789",
@@ -205,6 +204,73 @@ class TestExtractEndpoint:
             assert response.status_code == 200
             data = response.json()
             assert data["status"] == "success"
+
+    def test_extract_endpoint_saves_valid_file(self, client, tmp_path, monkeypatch):
+        """Test that the /extract endpoint correctly saves a JSON file with expected content.
+
+        This integration test verifies:
+        1. The endpoint creates a file in the configured extraction directory
+        2. The file content matches the submitted payload
+        3. File artifacts are confined to the temporary directory
+        """
+        test_client, test_session = client
+
+        # Create a temporary extraction directory
+        extraction_dir = tmp_path / "test_extractions"
+        extraction_dir.mkdir()
+        media_root = tmp_path / "test_media"
+        media_root.mkdir()
+
+        # Override settings via patching (monkeypatch)
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = extraction_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
+
+            # Define test payload
+            payload = {
+                "timestamp": "2025-12-01T12:00:00Z",
+                "url": "https://testsite.com/questions/integration123",
+                "hostname": "testsite.com",
+                "siteName": "Test_Site",
+                "elementCount": 5,
+                "imageCount": 0,
+                "pageHTML": "<html><body><p>Integration test content</p></body></html>",
+                "bodyText": "Integration test content",
+                "elements": [],
+                "images": [],
+            }
+
+            # Make API call
+            response = test_client.post("/extract", json=payload)
+            assert response.status_code == 200
+
+            response_data = response.json()
+            assert response_data["status"] == "success"
+
+            # Find the created JSON file in the extraction directory
+            # Directory structure: <extraction_dir>/<siteName>/<year>/<month>/
+            site_dir = extraction_dir / "Test_Site" / "2025" / "12"
+            assert site_dir.exists(), f"Expected directory {site_dir} to exist"
+
+            # Find all JSON files created
+            json_files = list(site_dir.glob("*.json"))
+            assert len(json_files) >= 1, "Expected at least one JSON file to be created"
+
+            # Load and verify the content
+            json_file = json_files[0]
+            file_content = json.loads(json_file.read_text(encoding="utf-8"))
+
+            # Assert file content matches payload
+            assert file_content["siteName"] == payload["siteName"]
+            assert file_content["url"] == payload["url"]
+            assert file_content["hostname"] == payload["hostname"]
+            assert file_content["timestamp"] == payload["timestamp"]
+            assert file_content["bodyText"] == payload["bodyText"]
+
+            # Verify HTML file was also created
+            html_files = list(site_dir.glob("*.html"))
+            assert len(html_files) >= 1, "Expected at least one HTML file to be created"
 
 
 class TestExtractionsListEndpoint:
@@ -234,10 +300,10 @@ class TestClearExtractionsEndpoint:
         output_dir, media_root = temp_dirs
 
         # First add an extraction
-        with patch("doughub2.main.config") as mock_config:
-            mock_config.OUTPUT_DIR = output_dir
-            mock_config.MEDIA_ROOT = str(media_root)
-            mock_config.DATABASE_URL = "sqlite:///:memory:"
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
 
             test_client.post("/extract", json={"url": "https://test.com/page"})
 
@@ -275,10 +341,10 @@ class TestDatabasePersistence:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.config") as mock_config:
-            mock_config.OUTPUT_DIR = output_dir
-            mock_config.MEDIA_ROOT = str(media_root)
-            mock_config.DATABASE_URL = "sqlite:///:memory:"
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
 
             payload = {
                 "url": "https://example.com/questions/duplicate_test",

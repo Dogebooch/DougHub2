@@ -10,9 +10,10 @@ import logging
 import shutil
 import urllib.parse
 import urllib.request
+from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import typer
 import uvicorn
@@ -22,7 +23,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from doughub2 import config
+from doughub2.config import settings
 from doughub2.models import Base
 from doughub2.persistence import QuestionRepository
 
@@ -69,7 +70,7 @@ def get_engine():
     """Get or create the database engine."""
     global _engine
     if _engine is None:
-        _engine = create_engine(config.DATABASE_URL)
+        _engine = create_engine(settings.DATABASE_URL)
         Base.metadata.create_all(_engine)
     return _engine
 
@@ -196,7 +197,7 @@ def copy_image_to_media_root(
         Relative path to the copied file
     """
     source_path = Path(source_path)
-    media_root = Path(config.MEDIA_ROOT)
+    media_root = Path(settings.MEDIA_ROOT)
 
     # Create source-specific directory
     source_dir = media_root / source_name
@@ -488,11 +489,11 @@ async def extract(
             question_id = str(extraction_index)
 
         # Create organized output directory: extractions/<Source>/<Year>/<Month>/
-        output_dir = config.OUTPUT_DIR / site_name / year / month
+        output_dir = settings.EXTRACTION_DIR / site_name / year / month
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Ensure media root exists
-        Path(config.MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
+        Path(settings.MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
 
         # Generate filename based on timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

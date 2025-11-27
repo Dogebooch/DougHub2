@@ -8,7 +8,7 @@ import yaml
 logger = logging.getLogger("doughub2")
 
 
-def get_resource_string(path: str, decode=True) -> Union[str, bytes]:
+def get_resource_string(path: str, decode=True) -> str | bytes:
     """
     Load a package resource (i.e. a file from within this package)
 
@@ -23,7 +23,7 @@ def get_resource_string(path: str, decode=True) -> Union[str, bytes]:
     return s.decode(errors="ignore") if decode else s
 
 
-def load_config(config_file: Union[str, Path]) -> Dict[str, Any]:
+def load_config(config_file: str | Path) -> dict[str, Any]:
     """
     Load the config from the specified yaml file
 
@@ -34,7 +34,7 @@ def load_config(config_file: Union[str, Path]) -> Dict[str, Any]:
         return yaml.safe_load(fp)
 
 
-def logging_setup(config: Dict):
+def logging_setup(config: dict):
     """
     setup logging based on the configuration
 
