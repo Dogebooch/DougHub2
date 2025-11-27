@@ -1,0 +1,58 @@
+[project]
+name = "doughub2"
+version = "0.1.0"
+description = "A personal hub project by Douglas Smith"
+authors = [{ name = "Douglas Smith", email = "douglas.smith@digdug.com" }]
+license = "LicenseRef-Proprietary"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "typer>=0.15.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+doughub2 = "doughub2.main:app"
+
+[tool.poetry]
+packages = [{ include = "doughub2", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^6.0"
+pre-commit = "^4.0"
+black = "^25.0"
+isort = "^6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | notebooks
+)/
+'''
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v"
