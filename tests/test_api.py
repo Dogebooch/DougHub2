@@ -14,8 +14,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from doughub2.api.app import app
-from doughub2.api.extraction import get_db
+from doughub2.main import api_app as app, get_db
 from doughub2.models import Base, Media, Question, Source
 
 
@@ -80,7 +79,7 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.api.extraction.config") as mock_config:
+        with patch("doughub2.main.config") as mock_config:
             mock_config.OUTPUT_DIR = output_dir
             mock_config.MEDIA_ROOT = str(media_root)
             mock_config.DATABASE_URL = "sqlite:///:memory:"
@@ -131,9 +130,9 @@ class TestExtractEndpoint:
         output_dir, media_root = temp_dirs
 
         with (
-            patch("doughub2.api.extraction.config") as mock_config,
+            patch("doughub2.main.config") as mock_config,
             patch(
-                "doughub2.api.extraction.urllib.request.urlretrieve"
+                "doughub2.main.urllib.request.urlretrieve"
             ) as mock_urlretrieve,
         ):
             mock_config.OUTPUT_DIR = output_dir
@@ -192,7 +191,7 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.api.extraction.config") as mock_config:
+        with patch("doughub2.main.config") as mock_config:
             mock_config.OUTPUT_DIR = output_dir
             mock_config.MEDIA_ROOT = str(media_root)
             mock_config.DATABASE_URL = "sqlite:///:memory:"
@@ -215,7 +214,7 @@ class TestExtractionsListEndpoint:
         """Test listing extractions when none exist."""
         test_client, _ = client
         # Clear any previous extractions
-        from doughub2.api.extraction import extractions
+        from doughub2.main import extractions
 
         extractions.clear()
 
@@ -235,7 +234,7 @@ class TestClearExtractionsEndpoint:
         output_dir, media_root = temp_dirs
 
         # First add an extraction
-        with patch("doughub2.api.extraction.config") as mock_config:
+        with patch("doughub2.main.config") as mock_config:
             mock_config.OUTPUT_DIR = output_dir
             mock_config.MEDIA_ROOT = str(media_root)
             mock_config.DATABASE_URL = "sqlite:///:memory:"
@@ -260,7 +259,7 @@ class TestGetExtractionEndpoint:
     def test_get_extraction_not_found(self, client):
         """Test getting a non-existent extraction."""
         test_client, _ = client
-        from doughub2.api.extraction import extractions
+        from doughub2.main import extractions
 
         extractions.clear()
 
@@ -276,7 +275,7 @@ class TestDatabasePersistence:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.api.extraction.config") as mock_config:
+        with patch("doughub2.main.config") as mock_config:
             mock_config.OUTPUT_DIR = output_dir
             mock_config.MEDIA_ROOT = str(media_root)
             mock_config.DATABASE_URL = "sqlite:///:memory:"
