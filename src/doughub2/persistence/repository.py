@@ -1,4 +1,4 @@
-"Repository for managing question persistence operations."
+"""Repository for managing question persistence operations."""
 
 import json
 import logging
@@ -8,8 +8,8 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from doughub import config
-from doughub.models import Media, Question, Source
+from doughub2 import config
+from doughub2.models import Media, Question, Source
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,12 @@ class QuestionRepository:
         Raises:
             ValueError: If required fields are missing.
         """
-        required_fields = ["source_id", "source_question_key", "raw_html", "raw_metadata_json"]
+        required_fields = [
+            "source_id",
+            "source_question_key",
+            "raw_html",
+            "raw_metadata_json",
+        ]
         for field in required_fields:
             if field not in question_data:
                 raise ValueError(f"Missing required field: {field}")
@@ -102,7 +107,7 @@ class QuestionRepository:
         # Check if question already exists
         stmt = select(Question).where(
             Question.source_id == question_data["source_id"],
-            Question.source_question_key == question_data["source_question_key"]
+            Question.source_question_key == question_data["source_question_key"],
         )
         question = self.session.execute(stmt).scalar_one_or_none()
 
@@ -176,7 +181,7 @@ class QuestionRepository:
         """
         stmt = select(Question).where(
             Question.source_id == source_id,
-            Question.source_question_key == source_question_key
+            Question.source_question_key == source_question_key,
         )
         return self.session.execute(stmt).scalar_one_or_none()
 
@@ -268,6 +273,8 @@ class QuestionRepository:
         Raises:
             OSError: If note file creation fails.
         """
+        import json as json_module
+
         # Fetch the question
         question = self.get_question_by_id(question_id)
         if question is None:
@@ -276,7 +283,9 @@ class QuestionRepository:
 
         # If note already exists, return its path
         if question.note_path and Path(question.note_path).exists():
-            logger.debug(f"Note already exists for question {question_id}: {question.note_path}")
+            logger.debug(
+                f"Note already exists for question {question_id}: {question.note_path}"
+            )
             return question.note_path
 
         # Create notes directory if it doesn't exist
@@ -286,7 +295,9 @@ class QuestionRepository:
         # Generate note filename from source and question key
         # Sanitize filename by replacing problematic characters
         source_name = question.source.name.replace(" ", "_").replace("/", "_")
-        safe_key = str(question.source_question_key).replace("/", "_").replace("\", "_")
+        safe_key = (
+            str(question.source_question_key).replace("/", "_").replace("\\", "_")
+        )
         note_filename = f"{source_name}_{safe_key}.md"
         note_path = notes_dir / note_filename
 
@@ -296,9 +307,11 @@ class QuestionRepository:
             metadata_dict = {}
             if question.raw_metadata_json:
                 try:
-                    metadata_dict = json.loads(str(question.raw_metadata_json))
-                except json.JSONDecodeError:
-                    logger.warning(f"Failed to parse metadata JSON for question {question_id}")
+                    metadata_dict = json_module.loads(str(question.raw_metadata_json))
+                except json_module.JSONDecodeError:
+                    logger.warning(
+                        f"Failed to parse metadata JSON for question {question_id}"
+                    )
 
             # Build YAML frontmatter
             frontmatter_lines = [
@@ -318,7 +331,7 @@ class QuestionRepository:
             frontmatter_lines.append("---")
             frontmatter_lines.append("")  # Blank line after frontmatter
 
-        # Write the stub note
+            # Write the stub note
             with open(note_path, "w", encoding="utf-8") as f:
                 f.write("\n".join(frontmatter_lines))
                 f.write("\n\n# Notes\n\n")

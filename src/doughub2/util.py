@@ -1,11 +1,11 @@
+import importlib.resources as resources
 import logging
 from pathlib import Path
 from typing import Any, Dict, Union
 
-import importlib.resources as resources
 import yaml
 
-logger = logging.getLogger('doughub2')
+logger = logging.getLogger("doughub2")
 
 
 def get_resource_string(path: str, decode=True) -> Union[str, bytes]:
@@ -17,10 +17,10 @@ def get_resource_string(path: str, decode=True) -> Union[str, bytes]:
     :param decode: if true, decode the file contents as string (otherwise return bytes)
     :return: the contents of the resource file (as string or bytes)
     """
-    package = __name__.split('.')[0]  # Get the top-level package name
-    with resources.files(package).joinpath(path).open('rb') as f:
+    package = __name__.split(".")[0]  # Get the top-level package name
+    with resources.files(package).joinpath(path).open("rb") as f:
         s = f.read()
-    return s.decode(errors='ignore') if decode else s
+    return s.decode(errors="ignore") if decode else s
 
 
 def load_config(config_file: Union[str, Path]) -> Dict[str, Any]:
@@ -40,10 +40,10 @@ def logging_setup(config: Dict):
 
     :param config: the parsed config tree
     """
-    log_conf = config['logging']
-    fmt = log_conf['format']
-    if log_conf['enabled']:
-        level = logging._nameToLevel[log_conf['level'].upper()]
+    log_conf = config["logging"]
+    fmt = log_conf["format"]
+    if log_conf["enabled"]:
+        level = logging._nameToLevel[log_conf["level"].upper()]
     else:
         level = logging.NOTSET
     logging.basicConfig(format=fmt, level=logging.WARNING)
