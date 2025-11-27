@@ -75,8 +75,13 @@ venv*/
 
 # project-specific stuff
 # exclude data from source control (but keep the folder)
+# This includes: data/extractions/, data/extractions/media/, etc.
 data/*
 !data/.gitkeep
+
+# Legacy extraction/media directories (now under data/)
+extractions/
+media_root/
 
 # Poetry
 poetry.lock

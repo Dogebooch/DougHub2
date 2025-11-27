@@ -346,6 +346,46 @@ def persist_to_database(
         return False, error_msg
 
 
+def sanitize_source_name(name: str) -> str:
+    """Sanitize source name to create a valid directory name.
+
+    Args:
+        name: Raw source name (e.g., "ACEP PeerPrep", "MKSAP 19")
+
+    Returns:
+        Sanitized name suitable for directory (e.g., "ACEP_PeerPrep", "MKSAP_19")
+    """
+    import re
+
+    # Replace spaces and invalid characters with underscores
+    sanitized = re.sub(r"[^\w\-]", "_", name)
+    # Remove consecutive underscores
+    sanitized = re.sub(r"_+", "_", sanitized)
+    # Strip leading/trailing underscores
+    return sanitized.strip("_")
+
+
+def parse_timestamp_for_path(timestamp_str: str | None) -> tuple[str, str]:
+    """Parse timestamp string to extract year and month for directory structure.
+
+    Args:
+        timestamp_str: ISO format timestamp (e.g., "2025-11-27T14:50:33.000Z")
+
+    Returns:
+        Tuple of (year, month) as strings (e.g., ("2025", "11"))
+    """
+    if timestamp_str:
+        try:
+            # Parse ISO format timestamp
+            dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+            return str(dt.year), f"{dt.month:02d}"
+        except (ValueError, AttributeError):
+            pass
+    # Fallback to current date
+    now = datetime.now()
+    return str(now.year), f"{now.month:02d}"
+
+
 @router.post("/extract", response_model=ExtractionResponse)
 async def extract(
     request: ExtractionRequest, db: Session = Depends(get_db)
@@ -356,6 +396,8 @@ async def extract(
     This endpoint receives HTML content and metadata from the browser extension,
     saves the files locally, downloads any images, and persists everything
     to the database.
+
+    Files are organized into: extractions/<Source>/<Year>/<Month>/
 
     Args:
         request: The extraction request containing page data.
@@ -371,18 +413,35 @@ async def extract(
         extractions.append(data)
         extraction_index = len(extractions) - 1
 
-        # Create output directory
-        output_dir = config.OUTPUT_DIR
+        # Parse source name and sanitize for directory creation
+        site_name_raw = data.get("siteName") or "unknown"
+        site_name = sanitize_source_name(site_name_raw)
+
+        # Parse timestamp from payload for year/month directory structure
+        timestamp_str = data.get("timestamp")
+        year, month = parse_timestamp_for_path(timestamp_str)
+
+        # Extract question ID from URL (used for filename, not directory)
+        url = data.get("url", "")
+        parts = url.rstrip("/").split("/")
+        if parts and len(parts) > 0:
+            question_id = parts[-1]
+            # If it looks like a session ID (very long), use second-to-last
+            if not question_id or len(question_id) > 50:
+                question_id = parts[-2] if len(parts) > 1 else str(extraction_index)
+        else:
+            question_id = str(extraction_index)
+
+        # Create organized output directory: extractions/<Source>/<Year>/<Month>/
+        output_dir = config.OUTPUT_DIR / site_name / year / month
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Ensure media root exists
         Path(config.MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
 
-        # Generate filename based on timestamp and site
+        # Generate filename based on timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        site_name_raw = data.get("siteName") or "unknown"
-        site_name = site_name_raw.replace(" ", "_")
-        base_filename = f"{timestamp}_{site_name}_{extraction_index}"
+        base_filename = f"{timestamp}"
 
         # Save HTML to file
         html_file = output_dir / f"{base_filename}.html"
