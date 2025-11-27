@@ -366,3 +366,37 @@ class TestDatabasePersistence:
             # Note: Due to idempotency check in persist_to_database,
             # the second request won't update, it will just return success
             assert len(questions) >= 1
+
+    def test_duplicate_question_by_content_not_created(self, client, temp_dirs):
+        """Verify that questions with the same content but different URLs are not duplicated."""
+        test_client, test_session = client
+        output_dir, media_root = temp_dirs
+
+        with patch("doughub2.main.settings") as mock_settings:
+            mock_settings.EXTRACTION_DIR = output_dir
+            mock_settings.MEDIA_ROOT = str(media_root)
+            mock_settings.DATABASE_URL = "sqlite:///:memory:"
+
+            # First extraction
+            payload1 = {
+                "url": "https://example.com/questions/unique-1",
+                "siteName": "ContentDupeTest",
+                "bodyText": "This is the exact same question content.",
+                "pageHTML": "<html>Content 1</html>",
+            }
+            response1 = test_client.post("/extract", json=payload1)
+            assert response1.status_code == 200
+            assert test_session.query(Question).count() == 1
+
+            # Second extraction with different URL but same bodyText
+            payload2 = {
+                "url": "https://example.com/questions/unique-2",
+                "siteName": "ContentDupeTest",
+                "bodyText": "This is the exact same question content.",
+                "pageHTML": "<html>Content 2</html>",
+            }
+            response2 = test_client.post("/extract", json=payload2)
+            assert response2.status_code == 200
+
+            # Verify that no new question was created
+            assert test_session.query(Question).count() == 1
