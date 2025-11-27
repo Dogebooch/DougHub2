@@ -86,7 +86,8 @@ poetry run pre-commit uninstall
 
 ```
 doughub2/
-├── src/doughub2/     # Main module (production code)
+├── src/doughub2/     # Python backend (FastAPI)
+├── frontend/         # React + TypeScript frontend (Vite)
 ├── tests/            # pytest tests
 ├── notebooks/        # Jupyter notebooks for exploration
 ├── config/           # Configuration files (YAML)
@@ -94,9 +95,27 @@ doughub2/
 └── pyproject.toml    # Poetry configuration
 ```
 
+### Frontend Development
+
+The frontend is built with React, TypeScript, Tailwind CSS, and Vite.
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server (http://localhost:5173)
+npm run dev
+
+# Build for production
+npm run build
+```
+
 ## Contact
 
-Douglas Smith (douglas.smith@digdug.com)
+Douglas Smith (<douglas.smith@digdug.com>)
 
 ## License
 
