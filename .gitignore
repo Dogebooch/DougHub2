@@ -85,3 +85,14 @@ media_root/
 
 # Poetry
 poetry.lock
+
+# Frontend / Node.js
+node_modules/
+.vite/
+dist/
+*.local
+
+# Frontend build artifacts
+src/doughub2/ui/frontend/node_modules/
+src/doughub2/ui/frontend/.vite/
+src/doughub2/ui/frontend/dist/
