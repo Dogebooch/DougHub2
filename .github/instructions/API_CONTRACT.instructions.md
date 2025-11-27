@@ -18,21 +18,19 @@ SCOPE
 
 STACK (LOCKED)
 
-- Front end: React + TypeScript (Vite or Next.js)
+| Layer | Technology | Notes |
+|-------|------------|-------|
+| Frontend | React + TypeScript | Strict types, interfaces in `src/types/` |
+| Backend | FastAPI or Flask | Pydantic models for validation |
+| Data Format | JSON over REST | No GraphQL, gRPC, or WebSockets |
+| Styling | Tailwind CSS | Dark theme (see UI_LAYOUT) |
 
-- Backend: FastAPI or Flask (whichever is present)
-
-- Endpoints for this app include at least:
-
-  - `/health`
-
-  - `/questions`
-
-  - `/notes`
-
-  - `/anki-sync`
-
-  - `/auth` (and sub-routes as needed)
+Endpoints for this app include at least:
+- `/health`
+- `/questions` or `/cards`
+- `/notes`
+- `/anki-sync`
+- `/auth` (and sub-routes as needed)
 
 GOALS
 
@@ -70,33 +68,101 @@ CONSTRAINTS
 
 FORMAT
 
-- For each endpoint, define in Markdown:
+For each endpoint, define in Markdown:
+- METHOD + PATH (e.g., `GET /cards`)
+- Purpose
+- Request: Path params, Query params, Body (with TS interface)
+- Response: Status codes, TS response interface
+- Example JSON request/response
 
-  - METHOD + PATH (e.g., `GET /questions`)
+TYPE DEFINITIONS
 
-  - Purpose
+TypeScript interfaces (frontend):
+```typescript
+// src/types/card.ts
+export interface Card {
+  id: number;
+  question: string;
+  answer: string;
+  tags: string[];
+  deck: string;
+  due: string;       // ISO 8601 date string
+  ease: number;      // 0-100 percentage
+  interval: number;  // days until next review
+  lapses: number;    // times forgotten
+  reviews: number;   // total review count
+  created: string;   // ISO 8601 timestamp
+  modified: string;  // ISO 8601 timestamp
+}
 
-  - Request:
+export interface CardFilters {
+  deck?: string;
+  tags?: string[];
+  search?: string;
+  dueOnly?: boolean;
+  sortBy?: 'due' | 'created' | 'ease';
+  sortOrder?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+}
 
-    - Path params
+export interface ApiResponse<T> {
+  data: T;
+  meta?: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}
 
-    - Query params
+export interface ApiError {
+  error: string;
+  message: string;
+  details?: Record<string, string[]>;
+}
+```
 
-    - Body (with TS-style interface)
+Python Pydantic models (backend):
+```python
+# src/doughub2/models/card.py
+from datetime import datetime
+from pydantic import BaseModel, Field
 
-  - Response:
+class Card(BaseModel):
+    id: int
+    question: str
+    answer: str
+    tags: list[str] = Field(default_factory=list)
+    deck: str
+    due: datetime
+    ease: int = Field(ge=0, le=100)
+    interval: int = Field(ge=0)
+    lapses: int = Field(ge=0, default=0)
+    reviews: int = Field(ge=0, default=0)
+    created: datetime
+    modified: datetime
 
-    - Status codes
+class CardFilters(BaseModel):
+    deck: str | None = None
+    tags: list[str] | None = None
+    search: str | None = None
+    due_only: bool = False
+    sort_by: str = "due"
+    sort_order: str = "asc"
+    limit: int = Field(default=50, ge=1, le=1000)
+    offset: int = Field(default=0, ge=0)
+```
 
-    - TS-style response interface
+NAMING CONVENTIONS
 
-  - Example JSON request/response
-
-- Mirror these interfaces in Python:
-
-  - Pydantic `BaseModel` (FastAPI) or equivalent dataclass (Flask)
-
-  - Field names and types must match the TS interfaces.
+| TypeScript | Python | Notes |
+|------------|--------|-------|
+| `camelCase` | `snake_case` | Field names |
+| `PascalCase` | `PascalCase` | Type/Class names |
+| `string` (ISO 8601) | `datetime` | Dates serialized as ISO strings |
+| `number` | `int` or `float` | Explicit int vs float in Python |
+| `string[]` | `list[str]` | Arrays become lists |
+| `T \| null` | `T \| None` | Nullable fields |
 
 WORKFLOW
 
@@ -121,4 +187,32 @@ OUTPUT STYLE
   - Python models
 
 - Keep everything minimal but explicit. No pseudo-types; only real TS and Python.
+
+TOOL USAGE
+
+Use the following tools to accomplish your tasks effectively:
+
+- `file_search` - Find existing API specs, TypeScript interfaces, or Python models by pattern (e.g., `**/*.ts`, `**/models.py`)
+- `grep_search` - Search for existing endpoint definitions, interface names, or model classes across the codebase
+- `semantic_search` - Find related API contracts, request/response types, or endpoint implementations
+- `read_file` - Inspect existing API documentation, TypeScript types, or Python Pydantic models
+- `create_file` - Create new API spec documents, TypeScript interface files, or Python model files
+- `replace_string_in_file` - Update existing API contracts, add new endpoints, or modify type definitions
+- `get_errors` - Check for TypeScript type errors or Python syntax issues after making changes
+- `fetch_webpage` - Research REST API best practices, Pydantic patterns, or TypeScript interface conventions
+
+WORKFLOW WITH TOOLS
+
+1. Before defining a new endpoint:
+   - Use `grep_search` to check if similar endpoints exist
+   - Use `read_file` on existing API docs to maintain consistency
+   
+2. When updating contracts:
+   - Use `file_search` to find all related TS interfaces and Python models
+   - Use `multi_replace_string_in_file` to update them in sync
+   - Use `get_errors` to verify no type mismatches were introduced
+
+3. After changes:
+   - Use `grep_search` to find all usages of modified types
+   - Notify if BACKEND_API or FRONT_BACK_WIRING agents need updates
 

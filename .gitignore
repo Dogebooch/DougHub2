@@ -70,6 +70,9 @@ venv*/
 .idea/
 *.iws
 
+# MCP server config (contains API keys)
+.vscode/mcp.json
+
 # project-specific stuff
 # exclude data from source control (but keep the folder)
 data/*
