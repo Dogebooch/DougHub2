@@ -2,7 +2,23 @@
 
 ## Project Overview
 
-Doughub2 is a personal hub project by Douglas Smith. It is a Python-based CLI application using Typer, managed with Poetry, and following modern Python best practices.
+Doughub2 is a personal hub project by Douglas Smith. It is a Python-based application with a React frontend, designed for:
+
+1. **Question Extraction** - Parse and extract questions from HTML/documents
+2. **AI Teaching/Learning Pipeline** - Local AI agent using Ollama for structured learning
+3. **Anki Integration** - Card editing, management, and synchronization
+4. **Persistent Notebook** - Notesium-based knowledge base with normalized topic grouping and bi-directional linking
+
+## Agent Roles
+
+This project uses a **two-agent workflow**:
+
+| Agent | Model | Role |
+|-------|-------|------|
+| **Gemini Code Assist** | Gemini | Project Lead & Planner - creates prompt.md files |
+| **GitHub Copilot** | Claude Opus 4.5 | Developer - implements code, manages files, refactors |
+
+**Your role (Copilot)**: You are the **developer agent**. You execute implementation tasks defined in prompt.md files or direct user requests. You write code, manage files, design UI, refactor, and handle GitHub operations.
 
 ## Accuracy and Verification
 
@@ -14,16 +30,79 @@ Doughub2 is a personal hub project by Douglas Smith. It is a Python-based CLI ap
 - If you lack information to complete a task, say so clearly rather than guessing.
 - When referencing external libraries or APIs, verify they exist and are used correctly.
 
+## Instruction Files (Your Toolbox)
+
+When implementing tasks, consult the relevant instruction file:
+
+| Task Type | Instruction File |
+|-----------|------------------|
+| API design, TypeScript/Python models | `API_CONTRACT.instructions.md` |
+| FastAPI routes, backend logic | `BACKEND_API.instructions.md` |
+| React hooks, data fetching | `FRONT_BACK_WIRING.instructions.md` |
+| Architecture decisions, planning | `PROJECT_LEAD.instructions.md` |
+| React components, Tailwind styling | `UI_LAYOUT.instructions.md` |
+
+**Always read the relevant instruction file before implementing** to ensure consistency with project standards.
+
 ## Technology Stack
 
+### Backend (Python)
 - **Language**: Python 3.9+
 - **Package Manager**: Poetry (pyproject.toml)
 - **CLI Framework**: Typer
+- **API Framework**: FastAPI
+- **Database**: SQLAlchemy + SQLite
+- **AI/ML**: Ollama (local LLM)
+- **Knowledge Base**: Notesium (markdown notes with bi-directional links)
 - **Configuration**: PyYAML
+
+### Frontend (React)
+- **Framework**: React + TypeScript (Vite)
+- **Styling**: Tailwind CSS (dark theme)
+- **Components**: shadcn/ui
+- **Icons**: Lucide React
+- **HTTP**: Native fetch API (no axios)
+
+### Code Quality
 - **Formatter**: Black (line-length 88)
 - **Import Sorter**: isort (black profile)
 - **Testing**: pytest with pytest-cov
 - **Pre-commit**: Hooks for formatting enforcement
+
+## Notesium Integration (Persistent Notebook)
+
+Notesium provides a Zettelkasten-style knowledge base with:
+
+### Core Concepts
+- **Flat file structure**: All notes in one directory (`data/notes/`)
+- **Hex filenames**: Notes named with 8-digit hex (e.g., `625d563f.md`)
+- **Bi-directional links**: `[link text](625d563f.md)` format
+- **Labels**: One-word title notes act as topic categories
+- **Graph visualization**: Visual relationships between notes
+
+### Topic Normalization
+Use labels (one-word title notes) for normalized topic grouping:
+```markdown
+# Cardiology
+<!-- This note acts as a label/category -->
+
+Links to all cardiology-related notes...
+```
+
+### Note Structure
+```markdown
+# Note Title
+
+Content with [[bi-directional links]] to other notes.
+
+Related: [Cardiology](a1b2c3d4.md) | [HighYield](e5f6g7h8.md)
+```
+
+### Integration Points
+- Questions extracted → linked to topic labels
+- AI learning sessions → create/update notes
+- Anki cards → bi-directionally linked to source notes
+- Graph view → visualize knowledge connections
 
 ## Directory Structure
 
@@ -37,6 +116,7 @@ The top-level directory structure is **fixed**. Do not rename, remove, or reorga
 | `notebooks/` | Jupyter notebooks for prototyping. Move to `src/` when ready. |
 | `config/` | YAML configuration files. Runtime settings go here. |
 | `data/` | Data files (gitignored). Never commit data to the repository. |
+| `data/notes/` | Notesium notes directory (flat structure, hex filenames). |
 | `.github/` | GitHub-related files including these instructions. |
 
 ### Folder Organization Rules
