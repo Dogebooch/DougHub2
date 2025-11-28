@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DougHub2: Dev Server",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "doughub2.main",
+            "args": [
+                "dev"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "DougHub2: Production Server",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "doughub2.main",
+            "args": [
+                "serve",
+                "--port",
+                "5000"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "DougHub2: Run Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "doughub2.main",
+            "args": [
+                "test",
+                "-v"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal"
+        }
+    ]
+}

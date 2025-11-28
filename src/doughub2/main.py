@@ -34,7 +34,29 @@ logger = logging.getLogger("doughub2")
 # Typer CLI Application
 # =============================================================================
 
-cli = typer.Typer(name="doughub2", add_completion=False)
+
+def default_callback(ctx: typer.Context):
+    """Default callback - run dev server if no command specified."""
+    if ctx.invoked_subcommand is None:
+        # No subcommand given, run the dev server
+        typer.echo("🚀 No command specified, starting dev server...")
+        typer.echo("   (Use --help to see all commands)")
+        typer.echo("")
+        import uvicorn
+        uvicorn.run(
+            "doughub2.main:api_app",
+            host="127.0.0.1",
+            port=8000,
+            reload=True,
+        )
+
+
+cli = typer.Typer(
+    name="doughub2",
+    add_completion=False,
+    invoke_without_command=True,
+    callback=default_callback,
+)
 
 # =============================================================================
 # FastAPI Application
