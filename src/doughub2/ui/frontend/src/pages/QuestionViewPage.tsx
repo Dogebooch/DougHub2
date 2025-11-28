@@ -1,5 +1,6 @@
 import DOMPurify from 'dompurify';
 import { Link, useParams } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import useApi from '../hooks/useApi';
 
 /** Question detail from the API */
@@ -18,7 +19,7 @@ interface QuestionDetail {
  */
 function QuestionViewPage() {
     const { questionId } = useParams<{ questionId: string }>();
-    const url = questionId ? `/api/questions/${questionId}` : null;
+    const url = questionId ? API_ENDPOINTS.questionDetail(questionId) : null;
     const { data: question, isLoading, error } = useApi<QuestionDetail>(url);
 
     return (

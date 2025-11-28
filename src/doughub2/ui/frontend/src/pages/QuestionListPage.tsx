@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import useApi from '../hooks/useApi';
 
 /** Question information from the API */
@@ -13,9 +14,6 @@ interface QuestionListResponse {
     questions: QuestionInfo[];
 }
 
-/** API endpoint for fetching questions */
-const QUESTIONS_API_URL = '/api/questions';
-
 /**
  * Question List Page Component
  *
@@ -24,7 +22,7 @@ const QUESTIONS_API_URL = '/api/questions';
  * question detail page.
  */
 function QuestionListPage() {
-    const { data, isLoading, error } = useApi<QuestionListResponse>(QUESTIONS_API_URL);
+    const { data, isLoading, error } = useApi<QuestionListResponse>(API_ENDPOINTS.questionsList);
     const questions = data?.questions ?? [];
 
     return (

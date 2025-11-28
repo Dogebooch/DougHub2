@@ -41,7 +41,6 @@ api_app.add_middleware(
 api_app.include_router(questions_router)
 api_app.include_router(extractions_router)
 
-
 # =============================================================================
 # Root Endpoint
 # =============================================================================
