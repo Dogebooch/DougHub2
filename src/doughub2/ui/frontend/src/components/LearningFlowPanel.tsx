@@ -17,18 +17,20 @@ interface LearningFlowPanelProps {
     currentStageIndex: number;
     onSubmitResponse: (stageId: string, response: string) => void;
     onStageComplete: (stageId: string) => void;
+    /** Width of the panel in pixels */
+    width?: number;
 }
 
 /** Get the icon component for a stage */
 function StageIcon({ icon, status }: { icon: string; status: StageStatus }) {
-    const iconClass = status === 'active' 
-        ? 'text-emerald-400' 
-        : status === 'completed' 
-            ? 'text-emerald-500' 
+    const iconClass = status === 'active'
+        ? 'text-emerald-400'
+        : status === 'completed'
+            ? 'text-emerald-500'
             : 'text-gray-500';
-    
+
     const size = 20;
-    
+
     switch (icon) {
         case 'lightbulb':
             return <Lightbulb size={size} className={iconClass} />;
@@ -52,13 +54,12 @@ function ProgressIndicator({ stages, currentIndex }: { stages: LearningStage[]; 
             {stages.map((stage, index) => (
                 <div
                     key={stage.id}
-                    className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        index < currentIndex
+                    className={`h-1.5 flex-1 rounded-full transition-colors ${index < currentIndex
                             ? 'bg-emerald-500'
                             : index === currentIndex
                                 ? 'bg-emerald-400'
                                 : 'bg-gray-600'
-                    }`}
+                        }`}
                 />
             ))}
         </div>
@@ -113,11 +114,10 @@ function ActiveStageCard({
             <button
                 onClick={handleSubmit}
                 disabled={!response.trim()}
-                className={`w-full py-3 rounded-lg font-medium text-sm transition-all ${
-                    response.trim()
+                className={`w-full py-3 rounded-lg font-medium text-sm transition-all ${response.trim()
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                         : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
+                    }`}
             >
                 Submit & Continue
             </button>
@@ -167,6 +167,7 @@ export function LearningFlowPanel({
     currentStageIndex,
     onSubmitResponse,
     onStageComplete,
+    width = 320,
 }: LearningFlowPanelProps) {
     const handleSubmitResponse = (stageId: string, response: string) => {
         onSubmitResponse(stageId, response);
@@ -174,7 +175,10 @@ export function LearningFlowPanel({
     };
 
     return (
-        <aside className="w-[320px] bg-[#1E2328] flex flex-col h-full border-l border-[#2A3038]">
+        <aside
+            className="bg-[#1E2328] flex flex-col h-full flex-shrink-0"
+            style={{ width: `${width}px` }}
+        >
             {/* Header */}
             <header className="p-4 border-b border-[#2A3038]">
                 <div className="flex items-center gap-3 mb-3">

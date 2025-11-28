@@ -16,6 +16,8 @@ interface QuestionSidebarProps {
     onSelectQuestion: (questionId: number) => void;
     statusFilter?: QuestionStatus | null;
     onFilterChange?: (status: QuestionStatus | null) => void;
+    /** Width of the sidebar in pixels */
+    width?: number;
 }
 
 /** Status icon component */
@@ -49,6 +51,7 @@ export function QuestionSidebar({
     onSelectQuestion,
     statusFilter,
     onFilterChange,
+    width = 280,
 }: QuestionSidebarProps) {
     // Calculate counts
     const completedCount = questions.filter(q => q.status === 'completed').length;
@@ -61,7 +64,10 @@ export function QuestionSidebar({
         : questions;
 
     return (
-        <aside className="w-[280px] bg-[#1E2328] flex flex-col h-full border-r border-[#2A3038]">
+        <aside
+            className="bg-[#1E2328] flex flex-col h-full flex-shrink-0"
+            style={{ width: `${width}px` }}
+        >
             {/* Header */}
             <header className="p-4 border-b border-[#2A3038]">
                 <h1 className="text-lg font-semibold text-white">Question Bank</h1>
@@ -74,11 +80,10 @@ export function QuestionSidebar({
             <div className="px-4 py-3 space-y-1 border-b border-[#2A3038]">
                 <button
                     onClick={() => onFilterChange?.(statusFilter === 'completed' ? null : 'completed')}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                        statusFilter === 'completed'
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${statusFilter === 'completed'
                             ? 'bg-emerald-600/20 text-emerald-400'
                             : 'text-gray-300 hover:bg-[#2A3038]'
-                    }`}
+                        }`}
                 >
                     <span className="flex items-center gap-2">
                         <CheckCircle2 size={16} className="text-emerald-400" />
@@ -89,11 +94,10 @@ export function QuestionSidebar({
 
                 <button
                     onClick={() => onFilterChange?.(statusFilter === 'in-progress' ? null : 'in-progress')}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                        statusFilter === 'in-progress'
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${statusFilter === 'in-progress'
                             ? 'bg-amber-600/20 text-amber-400'
                             : 'text-gray-300 hover:bg-[#2A3038]'
-                    }`}
+                        }`}
                 >
                     <span className="flex items-center gap-2">
                         <Clock size={16} className="text-amber-400" />
@@ -104,11 +108,10 @@ export function QuestionSidebar({
 
                 <button
                     onClick={() => onFilterChange?.(statusFilter === 'not-started' ? null : 'not-started')}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                        statusFilter === 'not-started'
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${statusFilter === 'not-started'
                             ? 'bg-gray-600/20 text-gray-300'
                             : 'text-gray-300 hover:bg-[#2A3038]'
-                    }`}
+                        }`}
                 >
                     <span className="flex items-center gap-2">
                         <Circle size={16} className="text-gray-400" />
@@ -125,11 +128,10 @@ export function QuestionSidebar({
                         <button
                             key={question.id}
                             onClick={() => onSelectQuestion(question.id)}
-                            className={`w-full text-left p-3 rounded-lg transition-all ${
-                                selectedQuestionId === question.id
+                            className={`w-full text-left p-3 rounded-lg transition-all ${selectedQuestionId === question.id
                                     ? 'bg-[#254341] border border-emerald-500/50'
                                     : 'bg-[#252A30] hover:bg-[#2A3038] border border-transparent'
-                            }`}
+                                }`}
                         >
                             <div className="flex items-start gap-2">
                                 <StatusIcon status={question.status} />

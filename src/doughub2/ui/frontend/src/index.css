@@ -9,7 +9,9 @@
     box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
     height: 100%;
     width: 100%;
     overflow: hidden;
@@ -70,6 +72,9 @@ body {
 }
 
 /* Ensure smooth transitions */
-button, a, input, textarea {
+button,
+a,
+input,
+textarea {
     transition: all 0.15s ease-in-out;
 }

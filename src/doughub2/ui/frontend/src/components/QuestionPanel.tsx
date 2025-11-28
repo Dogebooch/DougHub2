@@ -10,7 +10,7 @@
  */
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Question, AnswerOption } from '../types';
+import type { AnswerOption, Question } from '../types';
 
 interface QuestionPanelProps {
     question: Question | null;
@@ -139,11 +139,10 @@ export function QuestionPanel({
                         <button
                             onClick={onSubmitAnswer}
                             disabled={!selectedAnswer}
-                            className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${
-                                selectedAnswer
+                            className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${selectedAnswer
                                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
                                     : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
-                            }`}
+                                }`}
                         >
                             Submit Answer
                         </button>
@@ -156,11 +155,10 @@ export function QuestionPanel({
                 <button
                     onClick={onPrevious}
                     disabled={currentIndex === 0}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-                        currentIndex === 0
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${currentIndex === 0
                             ? 'text-gray-500 cursor-not-allowed'
                             : 'text-gray-300 hover:bg-[#2A3038]'
-                    }`}
+                        }`}
                 >
                     <ChevronLeft size={18} />
                     Previous
@@ -169,11 +167,10 @@ export function QuestionPanel({
                 <button
                     onClick={onNext}
                     disabled={currentIndex >= totalQuestions - 1}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-                        currentIndex >= totalQuestions - 1
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${currentIndex >= totalQuestions - 1
                             ? 'text-gray-500 cursor-not-allowed'
                             : 'text-gray-300 hover:bg-[#2A3038]'
-                    }`}
+                        }`}
                 >
                     Next
                     <ChevronRight size={18} />
