@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { FloatingActionButton, FloatingActionButtonStatus } from './components/ui/FloatingActionButton';
 import { getSiteConfig, isSupportedSite, siteConfigs } from './config/siteConfigs';
+import QuestionListPage from './pages/QuestionListPage';
 
 /** API endpoint for extraction */
 const EXTRACTION_API_URL = '/api/extract';
@@ -10,7 +11,7 @@ const RESET_DELAY_MS = 3000;
 
 /**
  * Main Application Component
- * 
+ *
  * Renders the DougHub2 application with the floating extraction button.
  * The button is only visible on supported sites defined in siteConfigs.
  */
@@ -159,6 +160,9 @@ function App() {
                     </section>
                 </div>
             </main>
+
+            {/* Question List Page */}
+            <QuestionListPage />
 
             {/* Floating Action Button - only shown on supported sites */}
             {isSupported && (
