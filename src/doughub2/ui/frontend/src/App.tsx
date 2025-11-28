@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import { FloatingActionButton, FloatingActionButtonStatus } from './components/ui/FloatingActionButton';
 import { getSiteConfig, isSupportedSite, siteConfigs } from './config/siteConfigs';
 import QuestionListPage from './pages/QuestionListPage';
@@ -19,19 +20,6 @@ const RESET_DELAY_MS = 3000;
 function App() {
     const [buttonStatus, setButtonStatus] = useState<FloatingActionButtonStatus>('idle');
     const [lastError, setLastError] = useState<string | null>(null);
-    const [currentHash, setCurrentHash] = useState<string>(window.location.hash);
-
-    // Listen for hash changes for simple routing
-    useEffect(() => {
-        const handleHashChange = () => {
-            setCurrentHash(window.location.hash);
-        };
-        window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
-    }, []);
-
-    // Determine which page to render based on hash
-    const isQuestionViewPage = currentHash.startsWith('#/question/');
 
     // Check if current hostname is a supported site
     const hostname = window.location.hostname;
@@ -175,8 +163,11 @@ function App() {
                 </div>
             </main>
 
-            {/* Question Pages - hash-based routing */}
-            {isQuestionViewPage ? <QuestionViewPage /> : <QuestionListPage />}
+            {/* Question Pages - React Router */}
+            <Routes>
+                <Route path="/" element={<QuestionListPage />} />
+                <Route path="/question/:questionId" element={<QuestionViewPage />} />
+            </Routes>
 
             {/* Floating Action Button - only shown on supported sites */}
             {isSupported && (

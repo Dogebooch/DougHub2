@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 /** Question information from the API */
 interface QuestionInfo {
@@ -96,8 +97,8 @@ function QuestionListPage() {
                             <ul className="space-y-3">
                                 {questions.map((question) => (
                                     <li key={question.question_id}>
-                                        <a
-                                            href={`#/question/${question.question_id}`}
+                                        <Link
+                                            to={`/question/${question.question_id}`}
                                             className="block bg-[#09232A] rounded-lg p-4 border border-[#506256]/30 hover:bg-[#315C62] hover:border-[#C8A92A]/50 transition-all"
                                         >
                                             <div className="flex items-center justify-between">
@@ -114,7 +115,7 @@ function QuestionListPage() {
                                                     ID: {question.question_id}
                                                 </span>
                                             </div>
-                                        </a>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>

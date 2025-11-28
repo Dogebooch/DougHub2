@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 
 /** Question detail from the API */
 interface QuestionDetail {
@@ -9,45 +10,20 @@ interface QuestionDetail {
 }
 
 /**
- * Parse the question ID from the URL hash.
- * Expected format: #/question/{id}
- *
- * @returns The question ID or null if not found/invalid
- */
-function parseQuestionIdFromHash(): number | null {
-    const hash = window.location.hash;
-    const match = hash.match(/^#\/question\/(\d+)$/);
-    if (match) {
-        return parseInt(match[1], 10);
-    }
-    return null;
-}
-
-/**
  * Question View Page Component
  *
  * Fetches and displays the full details of a single question, including
- * its raw HTML content. The question ID is parsed from the URL hash.
+ * its raw HTML content. The question ID is extracted from the URL using useParams.
  */
 function QuestionViewPage() {
+    const { questionId } = useParams<{ questionId: string }>();
     const [question, setQuestion] = useState<QuestionDetail | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [questionId, setQuestionId] = useState<number | null>(() => parseQuestionIdFromHash());
-
-    // Listen for hash changes to update the question ID
-    useEffect(() => {
-        const handleHashChange = () => {
-            setQuestionId(parseQuestionIdFromHash());
-        };
-
-        window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
-    }, []);
 
     // Fetch question data when questionId changes
     useEffect(() => {
-        if (questionId === null) {
+        if (!questionId) {
             setError('No question ID specified');
             setIsLoading(false);
             return;
@@ -88,12 +64,12 @@ function QuestionViewPage() {
                 <div className="max-w-4xl mx-auto">
                     {/* Back Link */}
                     <nav className="mb-6">
-                        <a
-                            href="#/"
+                        <Link
+                            to="/"
                             className="text-[#C8A92A] hover:text-[#DEC28C] transition-colors"
                         >
                             ← Back to Questions
-                        </a>
+                        </Link>
                     </nav>
 
                     {/* Loading State */}
