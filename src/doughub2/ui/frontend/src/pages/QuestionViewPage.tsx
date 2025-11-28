@@ -75,7 +75,7 @@ function QuestionViewPage() {
                     {/* Loading State */}
                     {isLoading && (
                         <div className="bg-[#2F3A48] rounded-lg border border-[#506256] p-6">
-                            <p className="text-[#A79385] text-lg text-center py-8">Loading...</p>
+                            <p className="text-[#F0DED3] text-lg text-center py-8">Loading question...</p>
                         </div>
                     )}
 
