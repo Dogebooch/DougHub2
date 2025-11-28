@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseApiResult<T> {
     data: T | null;
@@ -31,11 +31,11 @@ export function useApi<T>(url: string | null): UseApiResult<T> {
 
         try {
             const response = await fetch(url);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             const result: T = await response.json();
             setData(result);
         } catch (err) {

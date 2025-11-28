@@ -314,12 +314,13 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
     const width = canvas.width;
     const height = canvas.height;
 
-    // Physics Parameters
-    const repulsion = 1000;
-    const springLength = 150;
-    const springStrength = 0.05;
-    const damping = 0.85; // Slightly more friction (was 0.9)
-    const centerForce = 0.0005;
+    // Physics Parameters (Obsidian-like behavior)
+    const repulsion = 800;        // Slightly softer repulsion
+    const springLength = 120;     // Shorter rest length for tighter clusters
+    const springStrength = 0.03;  // Softer springs for organic movement
+    const damping = 0.5;          // High friction - nodes settle quickly
+    const centerForce = 0.001;    // Slightly stronger centering
+    const velocityThreshold = 0.1; // Stop nodes when nearly still (prevents jitter)
 
     // Clear
     ctx.clearRect(0, 0, width, height);
@@ -338,9 +339,11 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
         const dx = node.x - other.x;
         const dy = node.y - other.y;
         const distSq = dx * dx + dy * dy || 1;
-        const force = repulsion / distSq;
-        fx += (dx / Math.sqrt(distSq)) * force;
-        fy += (dy / Math.sqrt(distSq)) * force;
+        const dist = Math.sqrt(distSq);
+        // Soft falloff at distance - Obsidian-like
+        const force = repulsion / (distSq + 100);
+        fx += (dx / dist) * force;
+        fy += (dy / dist) * force;
       });
 
       // Attraction (Springs) for links
@@ -351,7 +354,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
           if (targetNode) {
             const dx = targetNode.x - node.x;
             const dy = targetNode.y - node.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
             const force = (dist - springLength) * springStrength;
             fx += (dx / dist) * force;
             fy += (dy / dist) * force;
@@ -363,9 +366,14 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
       fx += (width / 2 - node.x) * centerForce;
       fy += (height / 2 - node.y) * centerForce;
 
-      // Apply
+      // Apply velocity with damping
       node.vx = (node.vx + fx) * damping;
       node.vy = (node.vy + fy) * damping;
+      
+      // Velocity threshold - stop jitter when nearly still (Obsidian behavior)
+      if (Math.abs(node.vx) < velocityThreshold) node.vx = 0;
+      if (Math.abs(node.vy) < velocityThreshold) node.vy = 0;
+      
       node.x += node.vx;
       node.y += node.vy;
 
