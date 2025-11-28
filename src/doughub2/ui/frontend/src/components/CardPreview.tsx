@@ -1,6 +1,9 @@
-import { Calendar, BarChart3, TrendingUp, Tag, Eye, Edit2, Clock } from 'lucide-react';
+import DOMPurify from 'dompurify';
+import { BarChart3, Calendar, Clock, Edit2, Eye, Tag, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
-import type { Card } from '../types';
+import { API_ENDPOINTS } from '../config/apiConfig';
+import { useApi } from '../hooks/useApi';
+import type { Card, QuestionDetailResponse } from '../types';
 
 interface CardPreviewProps {
   card: Card | null;
@@ -9,6 +12,11 @@ interface CardPreviewProps {
 
 export function CardPreview({ card, onEdit }: CardPreviewProps) {
   const [showBack, setShowBack] = useState(false);
+
+  // Fetch detailed question data when a card is selected
+  const { data: questionDetail, isLoading } = useApi<QuestionDetailResponse>(
+    card ? API_ENDPOINTS.questionDetail(card.id) : null
+  );
 
   if (!card) {
     return (
@@ -69,13 +77,21 @@ export function CardPreview({ card, onEdit }: CardPreviewProps) {
               {showBack ? 'Hide' : 'Show'} Answer
             </button>
           </div>
-          <div className={`p-4 rounded-lg border transition-all ${
-            showBack 
-              ? 'bg-[#254341] border-[#759194]' 
+          <div className={`p-4 rounded-lg border transition-all min-h-[100px] ${showBack
+              ? 'bg-[#254341] border-[#759194]'
               : 'bg-[#09232A] border-[#506256]'
-          }`}>
+            }`}>
             {showBack ? (
-              <p className="text-[#F0DED3]">{card.back}</p>
+              <>
+                {isLoading && <p className="text-[#A79385]">Loading...</p>}
+                {questionDetail && (
+                  <div
+                    className="prose prose-sm prose-invert max-w-none text-[#F0DED3]"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(questionDetail.raw_html) }}
+                  />
+                )}
+                {!isLoading && !questionDetail && <p className="text-[#858A7E]">No additional details available.</p>}
+              </>
             ) : (
               <p className="text-[#858A7E] italic">Click "Show Answer" to reveal</p>
             )}
@@ -147,11 +163,10 @@ export function CardPreview({ card, onEdit }: CardPreviewProps) {
                 <TrendingUp size={16} />
                 <span>Ease Factor</span>
               </div>
-              <span className={`${
-                card.ease < 2.0 ? 'text-[#DE634D]' :
-                card.ease < 2.5 ? 'text-[#E1A102]' :
-                'text-[#BCBA90]'
-              }`}>
+              <span className={`${card.ease < 2.0 ? 'text-[#DE634D]' :
+                  card.ease < 2.5 ? 'text-[#E1A102]' :
+                    'text-[#BCBA90]'
+                }`}>
                 {(card.ease * 100).toFixed(0)}%
               </span>
             </div>

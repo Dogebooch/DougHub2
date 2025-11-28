@@ -41,3 +41,10 @@ export interface QuestionInfo {
 export interface QuestionListResponse {
   questions: QuestionInfo[];
 }
+
+export interface QuestionDetailResponse {
+  question_id: number;
+  source_name: string;
+  source_question_key: string;
+  raw_html: string;
+}
