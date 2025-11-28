@@ -58,4 +58,3 @@
 - [ ] `main.py` is significantly smaller and includes the new routers.
 - [ ] The application runs, and all previous API functionality remains intact.
 - [ ] API documentation is complete and correct.
-

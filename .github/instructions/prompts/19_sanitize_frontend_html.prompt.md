@@ -45,4 +45,3 @@
 - [ ] The `TODO` comment regarding sanitization is removed.
 - [ ] The application renders HTML content correctly and safely.
 - [ ] The application compiles without errors.
-

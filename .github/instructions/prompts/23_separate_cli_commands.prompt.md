@@ -61,4 +61,3 @@
 - [ ] The `__main__.py` and `pyproject.toml` entry points correctly point to the `cli` object in `doughub2.cli`.
 - [ ] All CLI commands (`serve`, `dev`, `test`, `build-frontend`) are functional.
 - [ ] The web application can still be served correctly via the `serve` or `dev` commands.
-

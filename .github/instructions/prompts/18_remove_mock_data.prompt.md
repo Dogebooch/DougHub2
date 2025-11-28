@@ -44,4 +44,3 @@
 - [ ] The directory `src/doughub2/ui/frontend/src/data` has been deleted if it became empty.
 - [ ] A search for "mockData" within the `src/doughub2/ui/frontend/src/` directory yields no results.
 - [ ] The application runs correctly without the mock data file.
-

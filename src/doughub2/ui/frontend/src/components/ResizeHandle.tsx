@@ -74,7 +74,7 @@ export function ResizeHandle({
         <div
             onMouseDown={handleMouseDown}
             className={`
-                group relative flex-shrink-0 
+                group relative flex-shrink-0
                 ${isHorizontal ? 'w-1 cursor-col-resize' : 'h-1 cursor-row-resize'}
                 ${isDragging ? 'bg-emerald-500' : 'bg-[#2A3038] hover:bg-emerald-500/50'}
                 transition-colors duration-75
@@ -83,7 +83,7 @@ export function ResizeHandle({
             {/* Larger invisible hit area for easier grabbing */}
             <div
                 className={`
-                    absolute 
+                    absolute
                     ${isHorizontal
                         ? 'inset-y-0 -left-1 -right-1 w-3'
                         : 'inset-x-0 -top-1 -bottom-1 h-3'

@@ -45,4 +45,3 @@
 - [ ] `src/doughub2/main.py` no longer contains database-specific setup code.
 - [ ] All API endpoints that require a database session correctly import and use the `get_db` dependency from the new module.
 - [ ] The application remains fully functional.
-
