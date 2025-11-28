@@ -72,7 +72,7 @@ function QuestionListPage() {
                         {/* Loading State */}
                         {isLoading && (
                             <div className="text-center py-8">
-                                <p className="text-[#A79385] text-lg">Loading...</p>
+                                <p className="text-[#F0DED3] text-lg">Loading questions...</p>
                             </div>
                         )}
 
