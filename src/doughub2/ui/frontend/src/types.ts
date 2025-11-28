@@ -30,3 +30,14 @@ export interface Note {
   lastModified: string;
   links: string[]; // IDs of notes linked to
 }
+
+// API Response Types
+export interface QuestionInfo {
+  question_id: number;
+  source_name: string;
+  source_question_key: string;
+}
+
+export interface QuestionListResponse {
+  questions: QuestionInfo[];
+}

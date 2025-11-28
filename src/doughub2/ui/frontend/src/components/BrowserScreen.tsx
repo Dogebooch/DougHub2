@@ -4,36 +4,14 @@ import { FilterPanel } from "./FilterPanel";
 import { CardTable } from "./CardTable";
 import { CardPreview } from "./CardPreview";
 import { QuickEditDialog } from "./QuickEditDialog";
-import { generateMockCards } from "../utils/mockData";
-import { Card, SavedFilter } from "../types";
+import { useApi } from "../hooks/useApi";
+import { API_ENDPOINTS } from "../config/apiConfig";
+import { Card, SavedFilter, QuestionListResponse } from "../types";
 
-// Mock data structure for medical flashcards
-const mockDecks = [
-  { id: 1, name: "Cardiology", cardCount: 12450 },
-  { id: 2, name: "Neurology", cardCount: 8920 },
-  { id: 3, name: "Pharmacology", cardCount: 15600 },
-  { id: 4, name: "Anatomy", cardCount: 18200 },
-  { id: 5, name: "Pathology", cardCount: 9830 },
-];
+// Deck and tag lists - will be populated from API in a future step
+const mockDecks: { id: number; name: string; cardCount: number }[] = [];
 
-const mockTags = [
-  "High-Yield",
-  "Step 1",
-  "Step 2",
-  "Step 3",
-  "Clinical",
-  "Basic Science",
-  "Mechanism",
-  "Side Effects",
-  "Diagnosis",
-  "Treatment",
-  "Pathophysiology",
-  "Pharmacokinetics",
-  "Toxicity",
-  "First Aid",
-  "Boards",
-  "Shelf Exam",
-];
+const mockTags: string[] = [];
 
 const defaultSavedFilters: SavedFilter[] = [
   {
@@ -87,8 +65,30 @@ export function BrowserScreen() {
     null,
   );
 
-  // Generate large dataset (will be replaced with AnkiConnect data)
-  const allCards = useMemo(() => generateMockCards(1000), []); // Start with 1000 for demo
+  // Fetch questions from API
+  const { data: apiResponse, isLoading, error } = useApi<QuestionListResponse>(API_ENDPOINTS.questionsList);
+
+  // Transform API data to Card format
+  const allCards = useMemo((): Card[] => {
+    if (!apiResponse?.questions) {
+      return [];
+    }
+
+    return apiResponse.questions.map((question): Card => ({
+      id: question.question_id,
+      deck: question.source_name,
+      front: question.source_question_key,
+      back: "", // Placeholder
+      tags: [], // Placeholder
+      created: new Date().toISOString(), // Placeholder
+      modified: new Date().toISOString(), // Placeholder
+      reviews: 0, // Placeholder
+      ease: 2.5, // Placeholder
+      lapses: 0, // Placeholder
+      interval: 0, // Placeholder
+      suspended: false, // Placeholder
+    }));
+  }, [apiResponse]);
 
   // Advanced search parser
   const parseSearchQuery = (query: string) => {
@@ -369,6 +369,15 @@ export function BrowserScreen() {
       setSortDirection("desc");
     }
   };
+
+  // Handle loading and error states
+  if (isLoading) {
+    return <div className="text-center p-8 text-text-secondary">Loading questions...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-8 text-status-error">Error fetching questions: {error.message}</div>;
+  }
 
   return (
     <div className="max-w-[1800px] mx-auto p-4">
