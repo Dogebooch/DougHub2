@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -109,13 +110,6 @@ function QuestionViewPage() {
                                 <h2 className="text-lg font-semibold text-[#DEC28C] mb-4">
                                     Question Content
                                 </h2>
-                                {/*
-                                    WARNING: XSS RISK
-                                    This renders raw HTML from an external source using dangerouslySetInnerHTML.
-                                    This is a TEMPORARY solution for development purposes.
-                                    TODO: Sanitize HTML using DOMPurify or similar library before rendering
-                                    to prevent XSS attacks in production.
-                                */}
                                 <div
                                     className="bg-[#09232A] rounded-lg p-4 border border-[#506256]/30 prose prose-invert max-w-none
                                                [&_*]:text-[#F0DED3] [&_a]:text-[#C8A92A] [&_a:hover]:text-[#DEC28C]
@@ -124,7 +118,7 @@ function QuestionViewPage() {
                                                [&_strong]:text-[#DEC28C] [&_em]:text-[#A79385]
                                                [&_code]:bg-[#254341] [&_code]:px-1 [&_code]:rounded
                                                [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded"
-                                    dangerouslySetInnerHTML={{ __html: question.raw_html }}
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.raw_html) }}
                                 />
                             </section>
 

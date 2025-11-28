@@ -20,13 +20,22 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from doughub2.config import settings
 from doughub2.models import Base
 from doughub2.persistence import QuestionRepository
+from doughub2.schemas import (
+    DatabaseInfo,
+    ExtractionRequest,
+    ExtractionResponse,
+    FileInfo,
+    ImageInfo,
+    QuestionDetailResponse,
+    QuestionInfo,
+    QuestionListResponse,
+)
 
 logger = logging.getLogger("doughub2")
 
@@ -43,6 +52,7 @@ def default_callback(ctx: typer.Context):
         typer.echo("   (Use --help to see all commands)")
         typer.echo("")
         import uvicorn
+
         uvicorn.run(
             "doughub2.main:api_app",
             host="127.0.0.1",
@@ -114,82 +124,6 @@ def get_db() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
-
-
-# =============================================================================
-# Pydantic Models
-# =============================================================================
-
-
-class ImageInfo(BaseModel):
-    """Information about an image in the extraction."""
-
-    url: str | None = None
-    title: str | None = None
-    type: str | None = None
-
-
-class ExtractionRequest(BaseModel):
-    """Request model for the extraction endpoint."""
-
-    timestamp: str | None = None
-    url: str
-    hostname: str | None = None
-    siteName: str | None = None
-    elementCount: int | None = None
-    imageCount: int | None = None
-    pageHTML: str | None = None
-    bodyText: str | None = None
-    elements: list[dict[str, Any]] | None = None
-    images: list[ImageInfo] | None = None
-
-
-class FileInfo(BaseModel):
-    """Information about saved files."""
-
-    html: str
-    json_file: str
-    images: list[str]
-
-
-class DatabaseInfo(BaseModel):
-    """Information about database persistence."""
-
-    persisted: bool
-    error: str | None = None
-
-
-class ExtractionResponse(BaseModel):
-    """Response model for the extraction endpoint."""
-
-    status: str
-    message: str
-    extraction_count: int
-    files: FileInfo
-    database: DatabaseInfo
-
-
-class QuestionInfo(BaseModel):
-    """Summary information about a question."""
-
-    question_id: int
-    source_name: str
-    source_question_key: str
-
-
-class QuestionListResponse(BaseModel):
-    """Response model for listing questions."""
-
-    questions: list[QuestionInfo]
-
-
-class QuestionDetailResponse(BaseModel):
-    """Response model for a single question with full details."""
-
-    question_id: int
-    source_name: str
-    source_question_key: str
-    raw_html: str
 
 
 # =============================================================================
