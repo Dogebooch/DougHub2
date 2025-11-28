@@ -734,19 +734,95 @@ def serve(
     reload: bool = typer.Option(False, "--reload", "-r", help="Enable auto-reload"),
 ):
     """
-    Start the FastAPI extraction server.
+    Start the DougHub2 web server.
 
-    This runs the extraction API server that receives data from the
-    Tampermonkey userscript. The server runs on port 5000 by default
-    for compatibility with the existing userscript.
+    Runs the FastAPI server with the React frontend.
+    Visit http://localhost:<port> to access the application.
     """
-    typer.echo(f"Starting DougHub2 Extraction Server on {host}:{port}")
-    typer.echo("Waiting for extractions from Tampermonkey script...")
+    typer.echo(f"🚀 Starting DougHub2 on http://{host}:{port}")
+    typer.echo("   Frontend: http://localhost:{port}")
+    typer.echo("   API Docs: http://localhost:{port}/docs")
+    typer.echo("")
     uvicorn.run(
         api_app,
         host=host,
         port=port,
         reload=reload,
+    )
+
+
+@cli.command()
+def test(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+    coverage: bool = typer.Option(False, "--coverage", "-c", help="Run with coverage"),
+):
+    """
+    Run the test suite.
+
+    Executes pytest on the tests/ directory.
+    """
+    import subprocess
+    import sys
+
+    cmd = [sys.executable, "-m", "pytest", "tests/"]
+
+    if verbose:
+        cmd.append("-v")
+
+    if coverage:
+        cmd.extend(["--cov=src/doughub2", "--cov-report=term-missing"])
+
+    typer.echo("🧪 Running tests...")
+    result = subprocess.run(cmd)
+    raise typer.Exit(code=result.returncode)
+
+
+@cli.command()
+def build_frontend():
+    """
+    Build the React frontend.
+
+    Runs 'npm run build' in the frontend directory.
+    """
+    import subprocess
+
+    frontend_dir = Path(__file__).parent / "ui" / "frontend"
+
+    if not frontend_dir.exists():
+        typer.echo(f"❌ Frontend directory not found: {frontend_dir}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo("🔨 Building frontend...")
+    result = subprocess.run(
+        ["npm", "run", "build"],
+        cwd=frontend_dir,
+        shell=True,  # Required on Windows for npm
+    )
+
+    if result.returncode == 0:
+        typer.echo("✅ Frontend built successfully!")
+    else:
+        typer.echo("❌ Frontend build failed!", err=True)
+
+    raise typer.Exit(code=result.returncode)
+
+
+@cli.command()
+def dev():
+    """
+    Start development servers (backend with reload).
+
+    Equivalent to: doughub2 serve --reload --port 8000
+    """
+    typer.echo("🔧 Starting DougHub2 in development mode...")
+    typer.echo("   Backend:  http://localhost:8000")
+    typer.echo("   API Docs: http://localhost:8000/docs")
+    typer.echo("")
+    uvicorn.run(
+        api_app,
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
     )
 
 
