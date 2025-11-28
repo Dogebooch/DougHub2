@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
-import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import useApi from '../hooks/useApi';
 
 /** Question detail from the API */
 interface QuestionDetail {
@@ -18,46 +18,8 @@ interface QuestionDetail {
  */
 function QuestionViewPage() {
     const { questionId } = useParams<{ questionId: string }>();
-    const [question, setQuestion] = useState<QuestionDetail | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Fetch question data when questionId changes
-    useEffect(() => {
-        if (!questionId) {
-            setError('No question ID specified');
-            setIsLoading(false);
-            return;
-        }
-
-        const fetchQuestion = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await fetch(`/api/questions/${questionId}`);
-
-                if (response.status === 404) {
-                    throw new Error('Question not found');
-                }
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
-
-                const data: QuestionDetail = await response.json();
-                setQuestion(data);
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Unknown error';
-                setError(message);
-                setQuestion(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchQuestion();
-    }, [questionId]);
+    const url = questionId ? `/api/questions/${questionId}` : null;
+    const { data: question, isLoading, error } = useApi<QuestionDetail>(url);
 
     return (
         <div className="min-h-screen bg-[#2C3134] text-[#F0DED3]">

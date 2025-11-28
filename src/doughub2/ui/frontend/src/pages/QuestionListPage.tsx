@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import useApi from '../hooks/useApi';
 
 /** Question information from the API */
 interface QuestionInfo {
@@ -24,34 +24,8 @@ const QUESTIONS_API_URL = '/api/questions';
  * question detail page.
  */
 function QuestionListPage() {
-    const [questions, setQuestions] = useState<QuestionInfo[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchQuestions = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await fetch(QUESTIONS_API_URL);
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
-
-                const data: QuestionListResponse = await response.json();
-                setQuestions(data.questions);
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Unknown error';
-                setError(`Failed to load questions: ${message}`);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchQuestions();
-    }, []);
+    const { data, isLoading, error } = useApi<QuestionListResponse>(QUESTIONS_API_URL);
+    const questions = data?.questions ?? [];
 
     return (
         <div className="min-h-screen bg-[#2C3134] text-[#F0DED3]">
