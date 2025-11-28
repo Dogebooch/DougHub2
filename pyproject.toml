@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-doughub2 = "doughub2.main:app"
+doughub2 = "doughub2.cli:cli"
 
 [tool.poetry]
 packages = [{ include = "doughub2", from = "src" }]

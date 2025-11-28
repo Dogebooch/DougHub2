@@ -1,3 +1,3 @@
-from doughub2.main import app
+from doughub2.cli import cli
 
-app()
+cli()
