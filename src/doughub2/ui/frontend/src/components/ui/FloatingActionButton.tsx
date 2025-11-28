@@ -68,7 +68,7 @@ const statusConfig: Record<
 
 /**
  * FloatingActionButton - A fixed-position button for triggering extraction
- * 
+ *
  * Displays different visual states based on the status prop:
  * - idle: Purple gradient, clickable
  * - processing: Pink gradient, spinning loader

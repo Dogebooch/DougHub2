@@ -2,13 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles for dark theme */
+/* Base reset and styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 body {
-    @apply bg-[#2C3134] text-[#F0DED3] antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #1A1E23;
+    color: #E5E7EB;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1E2328;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3A4048;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4A5058;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #3A4048 #1E2328;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Focus styles */
+:focus-visible {
+    outline: 2px solid #10B981;
+    outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+    background-color: #10B981;
+    color: white;
 }
 
 /* Ensure smooth transitions */
-* {
-    @apply transition-colors duration-150;
+button, a, input, textarea {
+    transition: all 0.15s ease-in-out;
 }

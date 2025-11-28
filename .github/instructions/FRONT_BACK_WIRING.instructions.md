@@ -115,7 +115,7 @@ export async function fetchCards(filters?: CardFilters): Promise<Card[]> {
   const params = new URLSearchParams();
   if (filters?.deck) params.set('deck', filters.deck);
   if (filters?.search) params.set('q', filters.search);
-  
+
   const res = await fetch(`${API_BASE}/cards?${params}`);
   if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
   return res.json();
@@ -246,4 +246,3 @@ COORDINATION
 - Read API_CONTRACT.instructions.md for current endpoint definitions
 - Ensure TypeScript types exactly match Python Pydantic models from BACKEND_API
 - Do not modify UI structure (that's UI_LAYOUT's responsibility)
-

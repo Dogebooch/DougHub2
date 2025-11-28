@@ -185,6 +185,33 @@ class QuestionRepository:
         )
         return self.session.execute(stmt).scalar_one_or_none()
 
+    def get_question_by_body_text(
+        self, source_id: int, body_text: str
+    ) -> Question | None:
+        """Retrieve a question by its source and body text.
+
+        This method provides a way to detect duplicate questions based on
+        their actual text content.
+
+        Args:
+            source_id: ID of the source.
+            body_text: The body text of the question to search for.
+
+        Returns:
+            The Question instance or None if not found.
+        """
+        stmt = select(Question).where(Question.source_id == source_id)
+        questions = self.session.execute(stmt).scalars().all()
+
+        for question in questions:
+            try:
+                metadata = json.loads(question.raw_metadata_json)
+                if metadata.get("bodyText") == body_text:
+                    return question
+            except (json.JSONDecodeError, AttributeError):
+                continue
+        return None
+
     def get_all_questions(self, source_id: int | None = None) -> list[Question]:
         """Retrieve all questions, optionally filtered by source.
 

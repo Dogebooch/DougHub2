@@ -1,181 +1,136 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { FloatingActionButton, FloatingActionButtonStatus } from './components/ui/FloatingActionButton';
-import { getSiteConfig, isSupportedSite, siteConfigs } from './config/siteConfigs';
-import QuestionListPage from './pages/QuestionListPage';
-import QuestionViewPage from './pages/QuestionViewPage';
-
-/** API endpoint for extraction */
-const EXTRACTION_API_URL = '/api/extract';
-
-/** Delay before resetting button to idle state (ms) */
-const RESET_DELAY_MS = 3000;
-
 /**
  * Main Application Component
  *
- * Renders the DougHub2 application with the floating extraction button.
- * The button is only visible on supported sites defined in siteConfigs.
+ * Implements the 3-panel Question Reviewer layout:
+ * - Left: Question Bank sidebar with filters and question list
+ * - Center: Question display with multiple choice answers
+ * - Right: Learning Flow panel with AI teaching stages
  */
+
+import { useCallback, useState } from 'react';
+import { LearningFlowPanel } from './components/LearningFlowPanel';
+import { QuestionPanel } from './components/QuestionPanel';
+import { QuestionSidebar } from './components/QuestionSidebar';
+import { defaultLearningStages, mockQuestions } from './data/mockData';
+import type { LearningStage, Question, QuestionStatus } from './types';
+
 function App() {
-    const [buttonStatus, setButtonStatus] = useState<FloatingActionButtonStatus>('idle');
-    const [lastError, setLastError] = useState<string | null>(null);
+    // Question state
+    const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+    const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(mockQuestions[0]?.id ?? null);
+    const [statusFilter, setStatusFilter] = useState<QuestionStatus | null>(null);
 
-    // Check if current hostname is a supported site
-    const hostname = window.location.hostname;
-    const isSupported = useMemo(() => isSupportedSite(hostname), [hostname]);
-    const siteConfig = useMemo(() => getSiteConfig(hostname), [hostname]);
+    // Answer state
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
-    /**
-     * Handles the extraction button click.
-     * Sends extraction request to backend and updates button state based on response.
-     */
-    const handleExtractClick = useCallback(async () => {
-        // Don't do anything if not in idle state
-        if (buttonStatus !== 'idle') return;
+    // Learning flow state
+    const [learningStages] = useState<LearningStage[]>(defaultLearningStages);
+    const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
-        // Clear previous error
-        setLastError(null);
+    // Get current question
+    const currentQuestion = questions.find(q => q.id === selectedQuestionId) ?? null;
+    const currentIndex = questions.findIndex(q => q.id === selectedQuestionId);
 
-        // Start processing
-        setButtonStatus('processing');
+    // Handle question selection
+    const handleSelectQuestion = useCallback((questionId: number) => {
+        setSelectedQuestionId(questionId);
+        setSelectedAnswer(null);
+        setIsSubmitted(false);
+        setCurrentStageIndex(0);
+    }, []);
 
-        try {
-            // Prepare the payload
-            const payload = {
-                url: window.location.href,
-                hostname: hostname,
-                siteName: siteConfig?.siteName ?? 'Unknown',
-                timestamp: new Date().toISOString(),
-            };
-
-            // Send extraction request to backend
-            const response = await fetch(EXTRACTION_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                // Success - API returned 2xx status
-                setButtonStatus('success');
-            } else {
-                // Error - API returned non-2xx status
-                const errorText = await response.text().catch(() => 'Unknown error');
-                setLastError(`Server error: ${response.status} - ${errorText}`);
-                setButtonStatus('error');
-            }
-        } catch (error) {
-            // Network error or fetch failed
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            setLastError(`Network error: ${message}`);
-            setButtonStatus('error');
+    // Handle answer selection
+    const handleSelectAnswer = useCallback((letter: string) => {
+        if (!isSubmitted) {
+            setSelectedAnswer(letter);
         }
+    }, [isSubmitted]);
 
-        // Reset to idle after delay
-        setTimeout(() => {
-            setButtonStatus('idle');
-        }, RESET_DELAY_MS);
-    }, [buttonStatus, hostname, siteConfig]);
+    // Handle answer submission
+    const handleSubmitAnswer = useCallback(() => {
+        if (selectedAnswer && currentQuestion) {
+            setIsSubmitted(true);
+            // Update question status to in-progress when first answered
+            setQuestions(prev => prev.map(q =>
+                q.id === currentQuestion.id && q.status === 'not-started'
+                    ? { ...q, status: 'in-progress' as QuestionStatus }
+                    : q
+            ));
+        }
+    }, [selectedAnswer, currentQuestion]);
+
+    // Handle navigation
+    const handlePrevious = useCallback(() => {
+        if (currentIndex > 0) {
+            handleSelectQuestion(questions[currentIndex - 1].id);
+        }
+    }, [currentIndex, questions, handleSelectQuestion]);
+
+    const handleNext = useCallback(() => {
+        if (currentIndex < questions.length - 1) {
+            handleSelectQuestion(questions[currentIndex + 1].id);
+        }
+    }, [currentIndex, questions, handleSelectQuestion]);
+
+    // Handle learning flow
+    const handleSubmitResponse = useCallback((stageId: string, response: string) => {
+        console.log('Stage response:', { stageId, response });
+        // In real app, this would send to AI backend
+    }, []);
+
+    const handleStageComplete = useCallback((_stageId: string) => {
+        // Move to next stage
+        if (currentStageIndex < learningStages.length - 1) {
+            setCurrentStageIndex(prev => prev + 1);
+        } else {
+            // All stages completed - mark question as completed
+            if (currentQuestion) {
+                setQuestions(prev => prev.map(q =>
+                    q.id === currentQuestion.id
+                        ? { ...q, status: 'completed' as QuestionStatus }
+                        : q
+                ));
+            }
+        }
+    }, [currentStageIndex, learningStages.length, currentQuestion]);
+
+    // Handle filter change
+    const handleFilterChange = useCallback((status: QuestionStatus | null) => {
+        setStatusFilter(status);
+    }, []);
 
     return (
-        <div className="min-h-screen bg-[#2C3134] text-[#F0DED3]">
-            {/* Main content area */}
-            <main className="container mx-auto px-4 py-8">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <header className="mb-8">
-                        <h1 className="text-3xl font-bold text-[#F0DED3] mb-2">
-                            DougHub2
-                        </h1>
-                        <p className="text-[#A79385]">
-                            Personal learning and productivity hub
-                        </p>
-                    </header>
+        <div className="flex h-screen bg-[#1A1E23] text-gray-100 overflow-hidden">
+            {/* Left Sidebar - Question Bank */}
+            <QuestionSidebar
+                questions={questions}
+                selectedQuestionId={selectedQuestionId}
+                onSelectQuestion={handleSelectQuestion}
+                statusFilter={statusFilter}
+                onFilterChange={handleFilterChange}
+            />
 
-                    {/* Site Status */}
-                    <section className="bg-[#2F3A48] rounded-lg border border-[#506256] p-6 mb-6">
-                        <h2 className="text-xl font-semibold text-[#F0DED3] mb-4">
-                            Question Extraction
-                        </h2>
+            {/* Center Panel - Question Display */}
+            <QuestionPanel
+                question={currentQuestion}
+                currentIndex={currentIndex}
+                totalQuestions={questions.length}
+                selectedAnswer={selectedAnswer}
+                onSelectAnswer={handleSelectAnswer}
+                onSubmitAnswer={handleSubmitAnswer}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                isSubmitted={isSubmitted}
+            />
 
-                        {/* Site detection status */}
-                        <div className="bg-[#09232A] rounded-lg p-4 border border-[#506256]/30 mb-4">
-                            <p className="text-[#858A7E] text-sm mb-2">
-                                <strong className="text-[#DEC28C]">Current Hostname:</strong>{' '}
-                                <code className="text-[#F0DED3] bg-[#254341] px-2 py-0.5 rounded">{hostname}</code>
-                            </p>
-                            <p className="text-[#858A7E] text-sm">
-                                <strong className="text-[#DEC28C]">Extraction Status:</strong>{' '}
-                                {isSupported ? (
-                                    <span className="text-[#a8e063]">
-                                        ✓ Supported ({siteConfig?.siteName})
-                                    </span>
-                                ) : (
-                                    <span className="text-[#f45c43]">
-                                        ✗ Not supported - button hidden
-                                    </span>
-                                )}
-                            </p>
-                        </div>
-
-                        {/* Button status */}
-                        <div className="bg-[#09232A] rounded-lg p-4 border border-[#506256]/30">
-                            <p className="text-[#858A7E] text-sm">
-                                <strong className="text-[#DEC28C]">Button Status:</strong>{' '}
-                                <span className={
-                                    buttonStatus === 'idle' ? 'text-[#A79385]' :
-                                        buttonStatus === 'processing' ? 'text-[#f093fb]' :
-                                            buttonStatus === 'success' ? 'text-[#a8e063]' :
-                                                'text-[#f45c43]'
-                                }>
-                                    {buttonStatus.charAt(0).toUpperCase() + buttonStatus.slice(1)}
-                                </span>
-                            </p>
-                            {lastError && (
-                                <p className="text-[#f45c43] text-xs mt-2">
-                                    <strong>Last Error:</strong> {lastError}
-                                </p>
-                            )}
-                        </div>
-                    </section>
-
-                    {/* Supported Sites */}
-                    <section className="bg-[#254341] rounded-lg border border-[#506256] p-6">
-                        <h3 className="text-lg font-semibold text-[#F0DED3] mb-3">
-                            Supported Sites
-                        </h3>
-                        <ul className="space-y-2 text-[#A79385] text-sm">
-                            {Object.entries(siteConfigs).map(([host, config]) => (
-                                <li key={host} className="flex items-start gap-2">
-                                    <span className="text-[#C8A92A]">•</span>
-                                    <span>
-                                        <code className="text-[#F0DED3] bg-[#09232A] px-2 py-0.5 rounded">{host}</code>
-                                        {' → '}
-                                        <span className="text-[#DEC28C]">{config.siteName}</span>
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                </div>
-            </main>
-
-            {/* Question Pages - React Router */}
-            <Routes>
-                <Route path="/" element={<QuestionListPage />} />
-                <Route path="/question/:questionId" element={<QuestionViewPage />} />
-            </Routes>
-
-            {/* Floating Action Button - only shown on supported sites */}
-            {isSupported && (
-                <FloatingActionButton
-                    status={buttonStatus}
-                    onClick={handleExtractClick}
-                />
-            )}
+            {/* Right Panel - Learning Flow */}
+            <LearningFlowPanel
+                stages={learningStages}
+                currentStageIndex={currentStageIndex}
+                onSubmitResponse={handleSubmitResponse}
+                onStageComplete={handleStageComplete}
+            />
         </div>
     );
 }

@@ -79,6 +79,15 @@ No Dependency Bloat:
 - REJECT: Redux, Zustand, Jotai. Use useState or useReducer instead.
 - REJECT: date-fns, moment. Use native Date or Intl instead.
 
+## AI Teaching/Learning Pipeline Guardrails
+
+All work on the AI Teaching/Learning Pipeline must adhere to the following rules:
+
+1.  **Use Ollama:** The AI pipeline must be built to interact with a local Ollama server.
+2.  **Configurable Models:** All AI model names must be configurable by the user. Do not hardcode any model names (e.g., `llama3`, `mistral`, etc.) in the source code. Model names should be loaded from the application's configuration.
+3.  **Infrastructure First:** Initial prompts should focus on creating the necessary infrastructure, clients, and API endpoints to communicate with Ollama. Do not implement complex AI logic or prompting strategies until the basic infrastructure is in place and tested.
+4.  **No External AI Services:** Do not use any external, cloud-based AI services or APIs. All AI processing must happen locally via Ollama.
+
 Agent Responsibilities:
 
 | Agent             | Responsibility                                       |
@@ -285,9 +294,16 @@ This example demonstrates a well-formed prompt for the developer agent, targetin
 - [ ] The code is formatted with `black` and passes `ruff` checks.
 - [ ] All temporary files and debugging statements have been removed.
 
+
 ---
 
+
+
+
+
 ## Special Commands
+
+
 
 
 
@@ -295,19 +311,29 @@ This example demonstrates a well-formed prompt for the developer agent, targetin
 
 
 
+
+
 When you receive a `/plan` command, you must treat it as a request to create a new `prompt.md` file. Follow these steps:
+
+
 
 
 
 1.  **Analyze the Request:** Understand the user's goal provided after the `/plan` command.
 
+
 2.  **Ensure Repository Awareness:** Perform the steps outlined in the "Before Creating a Plan" workflow. Check the file system, dependencies, and existing prompts to gain full context.
+
 
 3.  **Align with Project Vision:** The plan you create must strictly adhere to the **Project Vision** and **Locked Stack**. Do not introduce any technologies or architectural patterns that conflict with these instructions.
 
+
 4.  **Create the Prompt File:** Write a new file in `.github/instructions/prompts/`. The name should follow the `XX_slug.prompt.md` convention, where `XX` is the next available number.
 
+
 5.  **Follow the Structure:** The content of the prompt must follow the `Prompt File Structure` section precisely.
+
+
 
 
 
@@ -315,26 +341,36 @@ This ensures that all planning originates from a place of deep project awareness
 
 
 
+
+
 ## Coordination
+
+
 
 
 
 Reference other instruction files in prompts:
 
+
 - Follow API_CONTRACT.instructions.md for endpoint definitions
 
+
 - Adhere to BACKEND_API.instructions.md implementation rules
+
 
 - Use UI_LAYOUT.instructions.md for component patterns
 
 
 
+
+
 Delegate appropriately:
+
 
 - UI changes go to UI_LAYOUT
 
+
 - API changes go to API_CONTRACT first, then BACKEND_API
 
+
 - Wiring changes go to FRONT_BACK_WIRING
-
-

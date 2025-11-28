@@ -100,8 +100,8 @@ LUCIDE ICONS
 
 ```typescript
 // Common icons used in this project
-import { 
-  Search, Filter, Edit2, X, Save, CheckSquare, Square, 
+import {
+  Search, Filter, Edit2, X, Save, CheckSquare, Square,
   ArrowUpDown, ChevronDown, ChevronRight, Plus, Trash2,
   Settings, User, Menu, MoreVertical
 } from 'lucide-react';
@@ -302,4 +302,3 @@ COORDINATION
 - Do NOT define API shapes (that's API_CONTRACT's job)
 - Prepare components with prop interfaces that wiring agents can connect to
 - If layout seems wrong, note it as a Figma fix rather than coding around it
-

@@ -359,7 +359,7 @@
 
     /**
      * Send extracted data to Anki via AnkiConnect (placeholder for future)
-     * 
+     *
      * Images will be handled using AnkiConnect's storeMediaFile action:
      * 1. Download image as base64 data URL
      * 2. Send via storeMediaFile action to save in Anki's media collection

@@ -228,7 +228,7 @@ WORKFLOW WITH TOOLS
 1. Before defining a new endpoint:
    - Use `grep_search` to check if similar endpoints exist
    - Use `read_file` on existing API docs to maintain consistency
-   
+
 2. When updating contracts:
    - Use `file_search` to find all related TS interfaces and Python models
    - Use `multi_replace_string_in_file` to update them in sync
@@ -243,4 +243,3 @@ WORKFLOW WITH TOOLS
    - Delete deprecated type definitions
    - Remove old API spec versions (keep only current)
    - Delete temporary contract drafts after finalization
-
