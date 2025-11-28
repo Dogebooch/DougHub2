@@ -1,4 +1,4 @@
-import { LayoutDashboard, Brain, Library, Settings, Book } from 'lucide-react';
+import { Book, Brain, LayoutDashboard, Library } from 'lucide-react';
 
 interface NavigationProps {
   currentTab: string;
@@ -22,10 +22,9 @@ export function Navigation({ currentTab, onTabChange }: NavigationProps) {
             onClick={() => onTabChange(tab.id)}
             className={`
               flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors
-              ${
-                currentTab === tab.id
-                  ? 'border-[#C8A92A] text-[#F0DED3]'
-                  : 'border-transparent text-[#A79385] hover:text-[#DEC28C] hover:border-[#506256]'
+              ${currentTab === tab.id
+                ? 'border-[#C8A92A] text-[#F0DED3]'
+                : 'border-transparent text-[#A79385] hover:text-[#DEC28C] hover:border-[#506256]'
               }
             `}
           >

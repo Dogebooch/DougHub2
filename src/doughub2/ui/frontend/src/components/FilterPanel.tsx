@@ -1,5 +1,5 @@
-import { Filter, FolderOpen, Tag, X, Star, ChevronDown, ChevronRight, Clock, AlertCircle, PlayCircle, RotateCw, PauseCircle, Calendar, Search, MoreHorizontal, Pen, Settings, Trash, Share, BookOpen, Layers } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { AlertCircle, ChevronDown, ChevronRight, Clock, Filter, FolderOpen, Layers, PauseCircle, Pen, PlayCircle, RotateCw, Search, Settings, Share, Star, Tag, Trash, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import type { SavedFilter } from '../types';
 
 interface FilterPanelProps {
@@ -16,19 +16,19 @@ interface FilterPanelProps {
   onSearchQueryChange: (query: string) => void;
 }
 
-const CollapsibleSection = ({ 
-  title, 
-  icon: Icon, 
-  children, 
-  defaultOpen = true 
-}: { 
-  title: string; 
-  icon: any; 
-  children: React.ReactNode; 
+const CollapsibleSection = ({
+  title,
+  icon: Icon,
+  children,
+  defaultOpen = true
+}: {
+  title: string;
+  icon: any;
+  children: React.ReactNode;
   defaultOpen?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  
+
   return (
     <div className="border-b border-[#506256] last:border-b-0">
       <button
@@ -45,7 +45,7 @@ const CollapsibleSection = ({
           <ChevronRight size={16} className="text-[#858A7E]" />
         )}
       </button>
-      
+
       {isOpen && (
         <div className="px-4 pb-4 animate-in slide-in-from-top-1 duration-200">
           {children}
@@ -93,7 +93,7 @@ export function FilterPanel({
   const toggleSearchToken = (token: string) => {
     const parts = searchQuery.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
     const exists = parts.some(p => p.toLowerCase() === token.toLowerCase());
-    
+
     if (exists) {
       onSearchQueryChange(parts.filter(p => p.toLowerCase() !== token.toLowerCase()).join(' '));
     } else {
@@ -117,7 +117,7 @@ export function FilterPanel({
   };
 
   // Filter and format decks
-  const filteredDecks = decks.filter(deck => 
+  const filteredDecks = decks.filter(deck =>
     deck.name.toLowerCase().includes(deckQuery.toLowerCase())
   );
 
@@ -183,8 +183,8 @@ export function FilterPanel({
                   key={state.id}
                   onClick={() => toggleSearchToken(state.id)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors text-sm
-                    ${isActive 
-                      ? 'bg-[#315C62] text-[#F0DED3]' 
+                    ${isActive
+                      ? 'bg-[#315C62] text-[#F0DED3]'
                       : 'hover:bg-[#254341] text-[#A79385]'
                     }`}
                 >
@@ -257,11 +257,10 @@ export function FilterPanel({
               <button
                 key={tag}
                 onClick={() => onTagToggle(tag)}
-                className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${
-                  selectedTags.includes(tag)
+                className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${selectedTags.includes(tag)
                     ? 'bg-[#AB613C] border-[#AB613C] text-[#F0DED3]'
                     : 'bg-[#254341] border-[#506256] text-[#A79385] hover:border-[#AB613C] hover:text-[#DEC28C]'
-                }`}
+                  }`}
               >
                 {tag}
               </button>

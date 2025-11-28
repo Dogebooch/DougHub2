@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { ArrowUpDown, Edit2, CheckSquare, Square } from 'lucide-react';
+import { ArrowUpDown, CheckSquare, Edit2, Square } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../types';
+
+type SortField = 'created' | 'modified' | 'reviews' | 'ease' | 'interval' | 'deck' | 'tags' | 'front';
 
 interface CardTableProps {
   cards: Card[];
@@ -9,9 +11,9 @@ interface CardTableProps {
   onCardSelect: (card: Card) => void;
   onCardToggleSelect: (cardId: number) => void;
   onCardEdit: (card: Card) => void;
-  sortBy: 'created' | 'modified' | 'reviews' | 'ease' | 'interval' | 'deck' | 'tags' | 'front';
+  sortBy: SortField;
   sortDirection: 'asc' | 'desc';
-  onSortChange: (field: typeof sortBy) => void;
+  onSortChange: (field: SortField) => void;
   searchQuery: string;
 }
 
@@ -24,10 +26,10 @@ const HighlightText = ({ text, highlight }: { text: string; highlight: string[] 
   if (!highlight.length) return <span className="truncate">{text}</span>;
 
   const parts = text.split(new RegExp(`(${highlight.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi'));
-  
+
   return (
     <span className="truncate">
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         highlight.some(h => h.toLowerCase() === part.toLowerCase()) ? (
           <span key={i} className="bg-[#C8A92A]/30 text-[#F0DED3] font-medium rounded-[1px] px-0.5 -mx-0.5 border-b border-[#C8A92A]">{part}</span>
         ) : (
@@ -52,13 +54,13 @@ export function CardTable({
 }: CardTableProps) {
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Calculate visible range
   const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
   const endIndex = Math.min(startIndex + VISIBLE_ROWS + 2, cards.length);
   const visibleCards = cards.slice(startIndex, endIndex);
   const offsetY = startIndex * ROW_HEIGHT;
-  
+
   // Extract text terms from search query for highlighting
   const searchTerms = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -80,7 +82,7 @@ export function CardTable({
         const targetScroll = index * ROW_HEIGHT;
         const currentScroll = scrollTop;
         const containerHeight = VISIBLE_ROWS * ROW_HEIGHT;
-        
+
         // Only scroll if card is not in view
         if (targetScroll < currentScroll || targetScroll > currentScroll + containerHeight - ROW_HEIGHT) {
           containerRef.current.scrollTop = targetScroll;
@@ -160,7 +162,7 @@ export function CardTable({
               const actualIndex = startIndex + index;
               const isSelected = selectedCardIds.includes(card.id);
               const isFocused = focusedCardId === card.id;
-              
+
               return (
                 <div
                   key={card.id}
@@ -207,7 +209,7 @@ export function CardTable({
                       )}
                     </button>
                   </div>
-                  
+
                   <div className="col-span-5 flex items-center">
                     <div className="flex-1 min-w-0">
                       <div className="text-[#F0DED3] truncate">
@@ -234,7 +236,7 @@ export function CardTable({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="col-span-2 flex items-center text-[#DEC28C]">
                     {card.reviews}
                     {card.lapses > 0 && (
@@ -243,17 +245,16 @@ export function CardTable({
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="col-span-2 flex items-center">
-                    <span className={`${
-                      card.ease < 2.0 ? 'text-[#DE634D]' :
-                      card.ease < 2.5 ? 'text-[#E1A102]' :
-                      'text-[#BCBA90]'
-                    }`}>
+                    <span className={`${card.ease < 2.0 ? 'text-[#DE634D]' :
+                        card.ease < 2.5 ? 'text-[#E1A102]' :
+                          'text-[#BCBA90]'
+                      }`}>
                       {(card.ease * 100).toFixed(0)}%
                     </span>
                   </div>
-                  
+
                   <div className="col-span-2 flex items-center justify-between">
                     <span className="text-[#A79385] text-sm">
                       {new Date(card.modified).toLocaleDateString('en-US', {

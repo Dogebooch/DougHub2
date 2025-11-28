@@ -60,7 +60,7 @@ export function NotebookScreen() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(INITIAL_NOTES[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [showGraph, setShowGraph] = useState(false);
-  const [leftPanelWidth, setLeftPanelWidth] = useState(300);
+  const [leftPanelWidth, _setLeftPanelWidth] = useState(300);
 
   // Derived state
   const selectedNote = useMemo(() =>
@@ -482,7 +482,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
     e.currentTarget.style.cursor = hoveredNode ? 'pointer' : 'default';
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseUp = (_e: React.MouseEvent<HTMLCanvasElement>) => {
     if (draggedNodeRef.current) {
       // If we were dragging (moved), don't treat as click
       if (!isDraggingRef.current) {

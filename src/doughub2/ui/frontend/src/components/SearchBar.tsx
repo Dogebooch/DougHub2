@@ -1,5 +1,5 @@
-import { Search, X, HelpCircle } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { HelpCircle, Search, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface SearchBarProps {
   value: string;
@@ -21,13 +21,13 @@ type SearchToken = {
 
 const parseSearchTokens = (query: string): SearchToken[] => {
   if (!query.trim()) return [];
-  
+
   const tokens: SearchToken[] = [];
   const parts = query.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
-  
+
   parts.forEach(part => {
     const cleanPart = part.replace(/"/g, '');
-    
+
     if (part.startsWith('deck:')) {
       tokens.push({
         type: 'deck',
@@ -94,7 +94,7 @@ const parseSearchTokens = (query: string): SearchToken[] => {
       });
     }
   });
-  
+
   return tokens;
 };
 
@@ -114,10 +114,10 @@ const searchSuggestions = [
   { syntax: '-', description: 'Exclude term (NOT)', example: '-tag:Skip' },
 ];
 
-export function SearchBar({ 
-  value, 
-  onChange, 
-  resultCount, 
+export function SearchBar({
+  value,
+  onChange,
+  resultCount,
   totalCount,
   selectedCount = 0,
   onClearSelection
@@ -155,13 +155,7 @@ export function SearchBar({
     }
   };
 
-  const handleSuggestionClick = (suggestion: typeof searchSuggestions[0]) => {
-    setInputValue(suggestion.syntax);
-    setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
-
-  const filteredSuggestions = searchSuggestions.filter(s => 
+  const filteredSuggestions = searchSuggestions.filter(s =>
     inputValue && s.syntax.toLowerCase().includes(inputValue.toLowerCase())
   );
 
@@ -170,7 +164,7 @@ export function SearchBar({
       <div className="relative">
         <div className="flex items-center gap-2 w-full pl-10 pr-20 py-2 bg-[#09232A] border border-[#315C62] rounded-lg focus-within:ring-2 focus-within:ring-[#C8A92A] focus-within:border-transparent min-h-[48px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#858A7E] pointer-events-none" size={20} />
-          
+
           {/* Search Tokens */}
           <div className="flex flex-wrap items-center gap-1.5 flex-1">
             {tokens.map((token, idx) => (
@@ -191,7 +185,7 @@ export function SearchBar({
                 </button>
               </div>
             ))}
-            
+
             {/* Input for new terms */}
             <input
               ref={inputRef}
@@ -206,7 +200,7 @@ export function SearchBar({
             />
           </div>
         </div>
-        
+
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           <button
             onClick={() => {
@@ -259,7 +253,7 @@ export function SearchBar({
           </div>
         )}
       </div>
-      
+
       {showHelp && (
         <div className="mt-3 p-4 bg-[#254341] border border-[#315C62] rounded text-sm">
           <div className="flex items-center justify-between mb-3">
@@ -290,7 +284,7 @@ export function SearchBar({
               </div>
             ))}
           </div>
-          
+
           <div className="pt-3 border-t border-[#506256]/50">
             <p className="text-[#F4B696] text-xs font-medium mb-2">Search Tips</p>
             <div className="grid grid-cols-2 gap-2 text-xs text-[#DEC28C] mb-3">
@@ -305,7 +299,7 @@ export function SearchBar({
           </div>
         </div>
       )}
-      
+
       <div className="mt-3 flex items-center justify-between text-[#A79385]">
         <span>
           Showing <span className="text-[#C8A92A]">{resultCount.toLocaleString()}</span> of {totalCount.toLocaleString()} cards

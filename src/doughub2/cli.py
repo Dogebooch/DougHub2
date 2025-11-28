@@ -16,6 +16,8 @@ from pathlib import Path
 import typer
 import uvicorn
 
+from doughub2.main import PROJECT_ROOT, ensure_project_root
+
 logger = logging.getLogger("doughub2")
 
 # =============================================================================
@@ -36,8 +38,12 @@ def _open_browser_delayed(url: str, delay: float = 1.5):
 def default_callback(ctx: typer.Context):
     """Default callback - run dev server if no command specified."""
     if ctx.invoked_subcommand is None:
+        # Ensure we're in the project root
+        ensure_project_root()
+        
         # No subcommand given, run the dev server
         url = "http://127.0.0.1:8000"
+        typer.echo(f"📁 Working directory: {PROJECT_ROOT}")
         typer.echo("🚀 No command specified, starting dev server...")
         typer.echo("   (Use --help to see all commands)")
         typer.echo(f"   Opening browser: {url}")
@@ -77,6 +83,9 @@ def serve(
     Runs the FastAPI server with the React frontend.
     Visit http://localhost:<port> to access the application.
     """
+    # Ensure we're in the project root
+    ensure_project_root()
+    
     # Import api_app here to avoid circular imports
     from doughub2.main import api_app
 
@@ -84,6 +93,7 @@ def serve(
     browser_host = "localhost" if host == "0.0.0.0" else host
     url = f"http://{browser_host}:{port}"
     
+    typer.echo(f"📁 Working directory: {PROJECT_ROOT}")
     typer.echo(f"🚀 Starting DougHub2 on {url}")
     typer.echo(f"   Frontend: {url}")
     typer.echo(f"   API Docs: {url}/docs")
@@ -158,7 +168,11 @@ def dev():
 
     Equivalent to: doughub2 serve --reload --port 8000
     """
+    # Ensure we're in the project root
+    ensure_project_root()
+    
     url = "http://localhost:8000"
+    typer.echo(f"📁 Working directory: {PROJECT_ROOT}")
     typer.echo("🔧 Starting DougHub2 in development mode...")
     typer.echo(f"   Backend:  {url}")
     typer.echo(f"   API Docs: {url}/docs")
