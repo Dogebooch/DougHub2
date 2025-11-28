@@ -8,6 +8,9 @@ The CLI provides commands for running the server, tests, and development tasks.
 import logging
 import subprocess
 import sys
+import threading
+import time
+import webbrowser
 from pathlib import Path
 
 import typer
@@ -20,13 +23,26 @@ logger = logging.getLogger("doughub2")
 # =============================================================================
 
 
+def _open_browser_delayed(url: str, delay: float = 1.5):
+    """Open browser after a short delay to allow server to start."""
+    def _open():
+        time.sleep(delay)
+        webbrowser.open(url)
+    
+    thread = threading.Thread(target=_open, daemon=True)
+    thread.start()
+
+
 def default_callback(ctx: typer.Context):
     """Default callback - run dev server if no command specified."""
     if ctx.invoked_subcommand is None:
         # No subcommand given, run the dev server
+        url = "http://127.0.0.1:8000"
         typer.echo("🚀 No command specified, starting dev server...")
         typer.echo("   (Use --help to see all commands)")
+        typer.echo(f"   Opening browser: {url}")
         typer.echo("")
+        _open_browser_delayed(url)
         uvicorn.run(
             "doughub2.main:api_app",
             host="127.0.0.1",
@@ -53,6 +69,7 @@ def serve(
     host: str = typer.Option("0.0.0.0", "--host", "-h", help="Host to bind to"),
     port: int = typer.Option(5000, "--port", "-p", help="Port to bind to"),
     reload: bool = typer.Option(False, "--reload", "-r", help="Enable auto-reload"),
+    no_browser: bool = typer.Option(False, "--no-browser", help="Don't open browser"),
 ):
     """
     Start the DougHub2 web server.
@@ -63,10 +80,18 @@ def serve(
     # Import api_app here to avoid circular imports
     from doughub2.main import api_app
 
-    typer.echo(f"🚀 Starting DougHub2 on http://{host}:{port}")
-    typer.echo(f"   Frontend: http://localhost:{port}")
-    typer.echo(f"   API Docs: http://localhost:{port}/docs")
+    # Determine the URL for browser
+    browser_host = "localhost" if host == "0.0.0.0" else host
+    url = f"http://{browser_host}:{port}"
+    
+    typer.echo(f"🚀 Starting DougHub2 on {url}")
+    typer.echo(f"   Frontend: {url}")
+    typer.echo(f"   API Docs: {url}/docs")
     typer.echo("")
+    
+    if not no_browser:
+        _open_browser_delayed(url)
+    
     uvicorn.run(
         api_app,
         host=host,
@@ -133,10 +158,12 @@ def dev():
 
     Equivalent to: doughub2 serve --reload --port 8000
     """
+    url = "http://localhost:8000"
     typer.echo("🔧 Starting DougHub2 in development mode...")
-    typer.echo("   Backend:  http://localhost:8000")
-    typer.echo("   API Docs: http://localhost:8000/docs")
+    typer.echo(f"   Backend:  {url}")
+    typer.echo(f"   API Docs: {url}/docs")
     typer.echo("")
+    _open_browser_delayed(url)
     uvicorn.run(
         "doughub2.main:api_app",
         host="127.0.0.1",

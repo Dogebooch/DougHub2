@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, FileText, Network, Plus, MoreVertical, Save, Share2, X, Link as LinkIcon, Trash2 } from 'lucide-react';
+import { FileText, Link as LinkIcon, Plus, Search, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Note } from '../types';
 
 // Mock initial data
@@ -63,16 +63,16 @@ export function NotebookScreen() {
   const [leftPanelWidth, setLeftPanelWidth] = useState(300);
 
   // Derived state
-  const selectedNote = useMemo(() => 
+  const selectedNote = useMemo(() =>
     notes.find(n => n.id === selectedNoteId) || null
-  , [notes, selectedNoteId]);
+    , [notes, selectedNoteId]);
 
-  const filteredNotes = useMemo(() => 
-    notes.filter(n => 
+  const filteredNotes = useMemo(() =>
+    notes.filter(n =>
       n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       n.content.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime())
-  , [notes, searchQuery]);
+    , [notes, searchQuery]);
 
   // Handlers
   const handleCreateNote = () => {
@@ -93,23 +93,23 @@ export function NotebookScreen() {
   const handleUpdateNote = (id: string, updates: Partial<Note>) => {
     setNotes(prev => prev.map(n => {
       if (n.id !== id) return n;
-      
+
       const updatedNote = { ...n, ...updates, lastModified: new Date().toISOString() };
-      
+
       // Auto-detect links if content changed
       if (updates.content !== undefined) {
         const linkRegex = /\[\[(.*?)\]\]/g;
         const matches = [...updates.content.matchAll(linkRegex)];
         const linkedTitles = matches.map(m => m[1]);
-        
+
         // Find IDs for these titles
         const linkedIds = prev
           .filter(target => linkedTitles.some(title => title.toLowerCase() === target.title.toLowerCase()))
           .map(target => target.id);
-          
+
         updatedNote.links = linkedIds;
       }
-      
+
       return updatedNote;
     }));
   };
@@ -124,7 +124,7 @@ export function NotebookScreen() {
   return (
     <div className="h-full flex bg-[#2C3134] overflow-hidden">
       {/* Left Sidebar */}
-      <div 
+      <div
         className="flex flex-col border-r border-[#506256] bg-[#2F3A48]"
         style={{ width: leftPanelWidth }}
       >
@@ -135,7 +135,7 @@ export function NotebookScreen() {
               <FileText size={18} className="text-[#C8A92A]" />
               Notebook
             </h2>
-            <button 
+            <button
               onClick={handleCreateNote}
               className="p-1.5 rounded hover:bg-[#315C62] text-[#A79385] hover:text-[#F0DED3] transition-colors"
             >
@@ -211,10 +211,10 @@ export function NotebookScreen() {
               </span>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             {selectedNote && (
-              <button 
+              <button
                 onClick={() => handleDeleteNote(selectedNote.id)}
                 className="p-2 text-[#DE634D] hover:bg-[#254341] rounded transition-colors"
                 title="Delete Note"
@@ -228,7 +228,7 @@ export function NotebookScreen() {
         {/* Content */}
         <div className="flex-1 overflow-hidden relative">
           {showGraph ? (
-             <GraphView notes={notes} onNodeClick={setSelectedNoteId} />
+            <GraphView notes={notes} onNodeClick={setSelectedNoteId} />
           ) : (
             selectedNote ? (
               <div className="h-full flex flex-col max-w-3xl mx-auto p-8 animate-in fade-in duration-200">
@@ -266,7 +266,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const draggedNodeRef = useRef<string | null>(null);
   const isDraggingRef = useRef(false);
-  
+
   // Physics simulation state
   const nodes = useRef<GraphNode[]>([]);
   const requestRef = useRef<number>();
@@ -292,7 +292,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
 
     // Initialize nodes with random positions near center if not already set
     if (nodes.current.length === 0 || nodes.current.length !== notes.length) {
-       nodes.current = notes.map(note => ({
+      nodes.current = notes.map(note => ({
         id: note.id,
         x: Math.random() * width,
         y: Math.random() * height,
@@ -369,11 +369,11 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
       // Apply velocity with damping
       node.vx = (node.vx + fx) * damping;
       node.vy = (node.vy + fy) * damping;
-      
+
       // Velocity threshold - stop jitter when nearly still (Obsidian behavior)
       if (Math.abs(node.vx) < velocityThreshold) node.vx = 0;
       if (Math.abs(node.vy) < velocityThreshold) node.vy = 0;
-      
+
       node.x += node.vx;
       node.y += node.vy;
 
@@ -390,7 +390,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
     notes.forEach(note => {
       const sourceNode = nodes.current.find(n => n.id === note.id);
       if (!sourceNode) return;
-      
+
       note.links.forEach(linkId => {
         const targetNode = nodes.current.find(n => n.id === linkId);
         if (targetNode) {
@@ -406,7 +406,7 @@ function GraphView({ notes, onNodeClick }: { notes: Note[], onNodeClick: (id: st
     nodes.current.forEach(node => {
       const note = notes.find(n => n.id === node.id);
       const isHovered = hoveredNodeId === node.id;
-      
+
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
       ctx.fillStyle = isHovered ? '#C8A92A' : '#315C62';
