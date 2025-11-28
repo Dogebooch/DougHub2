@@ -1,41 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-import { SearchBar } from "./SearchBar";
-import { FilterPanel } from "./FilterPanel";
-import { CardTable } from "./CardTable";
-import { CardPreview } from "./CardPreview";
-import { QuickEditDialog } from "./QuickEditDialog";
-import { useApi } from "../hooks/useApi";
+import { useEffect, useMemo, useState } from "react";
 import { API_ENDPOINTS } from "../config/apiConfig";
-import { Card, SavedFilter, QuestionListResponse } from "../types";
-
-// Deck and tag lists - will be populated from API in a future step
-const mockDecks: { id: number; name: string; cardCount: number }[] = [];
-
-const mockTags: string[] = [];
-
-const defaultSavedFilters: SavedFilter[] = [
-  {
-    id: "1",
-    name: "High-Yield Cards",
-    searchQuery: "",
-    selectedDecks: [],
-    selectedTags: ["High-Yield"],
-  },
-  {
-    id: "2",
-    name: "Recently Added",
-    searchQuery: "added:1",
-    selectedDecks: [],
-    selectedTags: [],
-  },
-  {
-    id: "3",
-    name: "Difficult Cards",
-    searchQuery: "prop:ease<2.5",
-    selectedDecks: [],
-    selectedTags: [],
-  },
-];
+import { useApi } from "../hooks/useApi";
+import { Card, QuestionListResponse, SavedFilter } from "../types";
+import { CardPreview } from "./CardPreview";
+import { CardTable } from "./CardTable";
+import { FilterPanel } from "./FilterPanel";
+import { QuickEditDialog } from "./QuickEditDialog";
+import { SearchBar } from "./SearchBar";
 
 export function BrowserScreen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,9 +29,6 @@ export function BrowserScreen() {
     "asc" | "desc"
   >("desc");
   const [showSuspended, setShowSuspended] = useState(false);
-  const [savedFilters] = useState<SavedFilter[]>(
-    defaultSavedFilters,
-  );
   const [editingCard, setEditingCard] = useState<Card | null>(
     null,
   );
@@ -216,18 +184,11 @@ export function BrowserScreen() {
           },
         );
 
-        // Selected deck filter
-        const matchesDeck =
-          selectedDecks.length === 0 ||
-          selectedDecks.includes(
-            mockDecks.find((d) => d.name === card.deck)?.id ||
-              0,
-          );
+        // Selected deck filter - currently disabled until API provides deck data
+        const matchesDeck = selectedDecks.length === 0;
 
-        // Selected tag filter
-        const matchesTags =
-          selectedTags.length === 0 ||
-          selectedTags.some((tag) => card.tags.includes(tag));
+        // Selected tag filter - currently disabled until API provides tag data
+        const matchesTags = selectedTags.length === 0;
 
         return (
           matchesSearch &&
@@ -422,11 +383,11 @@ export function BrowserScreen() {
         {/* Filters */}
         <div className="col-span-3">
           <FilterPanel
-            decks={mockDecks}
-            tags={mockTags}
+            decks={[]}
+            tags={[]}
             selectedDecks={selectedDecks}
             selectedTags={selectedTags}
-            savedFilters={savedFilters}
+            savedFilters={[]}
             onDeckToggle={(deckId) => {
               setSelectedDecks((prev) =>
                 prev.includes(deckId)
@@ -493,7 +454,7 @@ export function BrowserScreen() {
             console.log("Saving card:", updatedCard);
             setEditingCard(null);
           }}
-          availableTags={mockTags}
+          availableTags={[]}
         />
       )}
     </div>
