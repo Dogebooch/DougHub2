@@ -19,6 +19,7 @@ import typer
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -683,6 +684,42 @@ async def clear_extractions() -> dict[str, str]:
     extractions.clear()
     logger.info("All extractions cleared")
     return {"status": "success", "message": "All extractions cleared"}
+
+
+# =============================================================================
+# Static File Serving (Production)
+# =============================================================================
+
+# Path to the frontend build directory
+FRONTEND_DIST_DIR = Path(__file__).parent / "ui" / "frontend" / "dist"
+
+
+@api_app.get("/{full_path:path}")
+async def serve_spa(full_path: str) -> FileResponse:
+    """
+    Catch-all route for serving the React SPA.
+
+    This route handles all paths not matched by API endpoints, serving either:
+    - Static files from the frontend build (if they exist)
+    - The index.html for client-side routing (for all other paths)
+
+    This enables react-router-dom to handle routing in the browser.
+    """
+    # First, check if the requested file exists in the dist directory
+    file_path = FRONTEND_DIST_DIR / full_path
+    if file_path.is_file():
+        return FileResponse(file_path)
+
+    # For all other paths, serve index.html (SPA catch-all)
+    index_path = FRONTEND_DIST_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+
+    # If frontend is not built, return a helpful error
+    raise HTTPException(
+        status_code=404,
+        detail="Frontend not found. Run 'npm run build' in src/doughub2/ui/frontend/",
+    )
 
 
 # =============================================================================

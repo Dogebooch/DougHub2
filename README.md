@@ -101,7 +101,7 @@ The frontend is built with React, TypeScript, Tailwind CSS, and Vite.
 
 ```bash
 # Navigate to frontend directory
-cd frontend
+cd src/doughub2/ui/frontend
 
 # Install dependencies
 npm install
@@ -112,6 +112,44 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+## Running in Production
+
+To run the integrated application (backend + frontend) in production mode:
+
+### 1. Build the Frontend
+
+```bash
+# Navigate to the frontend directory
+cd src/doughub2/ui/frontend
+
+# Install dependencies (if not already done)
+npm install
+
+# Build the production bundle
+npm run build
+```
+
+This creates a `dist` directory with the optimized React application.
+
+### 2. Start the Backend Server
+
+```bash
+# Navigate back to the project root
+cd ../../../..
+
+# Run the server with uvicorn
+poetry run uvicorn doughub2.main:api_app --host 0.0.0.0 --port 8000
+```
+
+### 3. Access the Application
+
+Open your browser and navigate to `http://localhost:8000`. The FastAPI backend serves both:
+
+- The React UI at the root path (`/`)
+- API endpoints at their respective paths (`/questions`, `/extract`, etc.)
+
+**Note:** The frontend must be built before running in production mode. In development, run the Vite dev server (`npm run dev`) and the backend server (`poetry run doughub2 serve`) separately for hot-reloading.
 
 ## Contact
 
