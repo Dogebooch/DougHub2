@@ -14,8 +14,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from doughub2.database import get_db
 from doughub2.main import api_app as app
-from doughub2.main import get_db
 from doughub2.models import Base, Media, Question, Source
 
 
@@ -80,7 +80,7 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
@@ -131,8 +131,10 @@ class TestExtractEndpoint:
         output_dir, media_root = temp_dirs
 
         with (
-            patch("doughub2.main.settings") as mock_settings,
-            patch("doughub2.main.urllib.request.urlretrieve") as mock_urlretrieve,
+            patch("doughub2.api.extractions.settings") as mock_settings,
+            patch(
+                "doughub2.api.extractions.urllib.request.urlretrieve"
+            ) as mock_urlretrieve,
         ):
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
@@ -190,7 +192,7 @@ class TestExtractEndpoint:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
@@ -222,7 +224,7 @@ class TestExtractEndpoint:
         media_root.mkdir()
 
         # Override settings via patching (monkeypatch)
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = extraction_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
@@ -280,7 +282,7 @@ class TestExtractionsListEndpoint:
         """Test listing extractions when none exist."""
         test_client, _ = client
         # Clear any previous extractions
-        from doughub2.main import extractions
+        from doughub2.api.extractions import extractions
 
         extractions.clear()
 
@@ -300,7 +302,7 @@ class TestClearExtractionsEndpoint:
         output_dir, media_root = temp_dirs
 
         # First add an extraction
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
@@ -325,7 +327,7 @@ class TestGetExtractionEndpoint:
     def test_get_extraction_not_found(self, client):
         """Test getting a non-existent extraction."""
         test_client, _ = client
-        from doughub2.main import extractions
+        from doughub2.api.extractions import extractions
 
         extractions.clear()
 
@@ -341,7 +343,7 @@ class TestDatabasePersistence:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
@@ -372,7 +374,7 @@ class TestDatabasePersistence:
         test_client, test_session = client
         output_dir, media_root = temp_dirs
 
-        with patch("doughub2.main.settings") as mock_settings:
+        with patch("doughub2.api.extractions.settings") as mock_settings:
             mock_settings.EXTRACTION_DIR = output_dir
             mock_settings.MEDIA_ROOT = str(media_root)
             mock_settings.DATABASE_URL = "sqlite:///:memory:"
